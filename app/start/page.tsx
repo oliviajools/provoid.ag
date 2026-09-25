@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import { sql } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { Topbar } from "@/components/Topbar";
 
 export const metadata: Metadata = { title: "Start" };
 export const dynamic = "force-dynamic";
 
-const FEATURES = [
+const FEATURES: { href?: string; title: string; when: string; text: string }[] = [
   {
+    href: "/kompass",
     title: "Dein Kompass",
     when: "Session 1",
     text: "Eine kurze Befragung. Daraus entstehen dein Ziel für die AG, deine Projektidee und die drei Themen, die dich am meisten interessieren.",
@@ -42,6 +45,7 @@ const PHASES = [
 export default async function Start() {
   const user = await requireUser();
   const days = user.days_until_start;
+  const hasCompass = (await sql`select 1 from compass where user_id = ${user.id} and round = 1`).length > 0;
   const before = days !== null && days > 0;
 
   return (
@@ -57,8 +61,8 @@ export default async function Start() {
               </div>
               <h1>Hallo, {user.pseudonym}.</h1>
               <p className="lead">
-                Hier entsteht Schritt für Schritt deine AG-Plattform. Die ersten Funktionen schalten wir in der
-                ersten Session gemeinsam frei.
+                Hier entsteht Schritt für Schritt deine AG-Plattform. Starte mit deinem Kompass, die anderen
+                Bereiche schalten wir nach und nach frei.
               </p>
             </div>
             {before && (
@@ -78,7 +82,12 @@ export default async function Start() {
               <p className="muted">Jede Funktion bekommt ihren eigenen Bereich. Was noch kommt, ist schon markiert.</p>
             </div>
             <div className="tiles">
-              {FEATURES.map((f) => (
+              {FEATURES.map((f) => f.href ? (
+                <Link href={hasCompass ? "/kompass/karte" : f.href} className="card tile live-tile" key={f.title}>
+                  <header><h3>{f.title}</h3><span className="chip live">{hasCompass ? "Ausgefüllt" : "Jetzt starten"}</span></header>
+                  <div className="body"><p>{f.text}</p><span className="tile-cta">{hasCompass ? "Deine Kompass-Karte ansehen" : "Kompass starten"}</span></div>
+                </Link>
+              ) : (
                 <article className="card tile" key={f.title}>
                   <header><h3>{f.title}</h3><span className="chip">{f.when}</span></header>
                   <div className="body"><p>{f.text}</p></div>

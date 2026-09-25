@@ -41,7 +41,11 @@ export default async function Coach() {
               <h1>Deine AGs.</h1>
               <p className="lead">Leg AGs an, verteil den AG-Code und hilf, wenn jemand sein Passwort vergessen hat.</p>
             </div>
-            <Link href="/start" className="btn ghost">Schüleransicht ansehen</Link>
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+              <Link href="/coach/kompass" className="btn">Kompass-Auswertung</Link>
+              <Link href="/ideen" className="btn ghost">Ideen-Wand</Link>
+              <Link href="/start" className="btn ghost">Schüleransicht ansehen</Link>
+            </div>
           </section>
 
           <section className="card" aria-labelledby="new-ag">

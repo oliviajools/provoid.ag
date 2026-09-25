@@ -11,7 +11,7 @@ if (!/^[A-Za-z0-9_.]{3,24}$/.test(name)) {
 }
 const url = process.env.DATABASE_URL;
 if (!url) { console.error("DATABASE_URL fehlt."); process.exit(1); }
-const sql = postgres(url, { ssl: process.env.DATABASE_SSL === "require" ? "require" : false, max: 1 });
+const sql = postgres(url, { ssl: process.env.DATABASE_SSL === "require" ? "require" : false, max: 1, onnotice: () => {} });
 
 const password = process.env.COACH_PASSWORD || randomBytes(9).toString("base64url");
 const hash = await bcrypt.hash(password, 12);

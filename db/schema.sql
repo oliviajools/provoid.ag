@@ -45,3 +45,14 @@ create table if not exists login_attempts (
   attempted_at timestamptz not null default now()
 );
 create index if not exists login_attempts_key on login_attempts (key, attempted_at);
+
+-- Kompass-Befragung. round: 1 = Start, 2 = Halbzeit, 3 = Ende
+create table if not exists compass (
+  user_id      uuid not null references users(id) on delete cascade,
+  round        smallint not null default 1 check (round between 1 and 3),
+  answers      jsonb not null,
+  share_dream  text not null default 'no' check (share_dream in ('name', 'anon', 'no')),
+  completed_at timestamptz not null default now(),
+  updated_at   timestamptz not null default now(),
+  primary key (user_id, round)
+);
