@@ -1,0 +1,4 @@
+ag.provoid.de {
+  encode gzip
+  reverse_proxy app:3000
+}

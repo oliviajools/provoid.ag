@@ -1,0 +1,24 @@
+# Variante A: Nur die Datenbank auf Hetzner, die App läuft auf Vercel.
+# Start: docker compose -f docker-compose.db.yml up -d
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: kiag
+      POSTGRES_USER: kiag
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD in .env setzen}
+    command: >
+      postgres
+      -c ssl=on
+      -c ssl_cert_file=/certs/server.crt
+      -c ssl_key_file=/certs/server.key
+      -c hba_file=/etc/postgresql/pg_hba.conf
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./certs:/certs:ro
+      - ./pg_hba.conf:/etc/postgresql/pg_hba.conf:ro
+    ports:
+      - "5432:5432"
+volumes:
+  pgdata:
