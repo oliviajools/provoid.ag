@@ -15,13 +15,15 @@ const FEATURES: { href?: string; title: string; when: string; text: string }[] =
     text: "Eine kurze Befragung. Daraus entstehen dein Ziel für die AG, deine Projektidee und die drei Themen, die dich am meisten interessieren.",
   },
   {
+    href: "/radar",
     title: "KI-Radar",
     when: "Jede Session",
     text: "Die wichtigsten KI-News zum Start jeder Session. Mit der Rubrik „Hype oder echt?“, bei der ihr abstimmt.",
   },
   {
+    href: "/radar/einreichen",
     title: "Quellen einreichen",
-    when: "Ab Session 2",
+    when: "Jederzeit",
     text: "Du findest unter der Woche etwas Spannendes über KI? Reich es ein. Die besten Funde landen im Radar, mit deinem Namen.",
   },
   {
@@ -45,6 +47,9 @@ const PHASES = [
 export default async function Start() {
   const user = await requireUser();
   const days = user.days_until_start;
+  const [{ n: radarCount }] = await sql<{ n: number }[]>`
+    select count(*)::int as n from news_items where status = 'published' and (group_id is null or group_id = ${user.group_id})
+      and published_at > now() - interval '7 days'`;
   const hasCompass = (await sql`select 1 from compass where user_id = ${user.id} and round = 1`).length > 0;
   const before = days !== null && days > 0;
 
@@ -82,10 +87,15 @@ export default async function Start() {
               <p className="muted">Jede Funktion bekommt ihren eigenen Bereich. Was noch kommt, ist schon markiert.</p>
             </div>
             <div className="tiles">
-              {FEATURES.map((f) => f.href ? (
+              {FEATURES.map((f) => f.href === "/kompass" ? (
                 <Link href={hasCompass ? "/kompass/karte" : f.href} className="card tile live-tile" key={f.title}>
                   <header><h3>{f.title}</h3><span className="chip live">{hasCompass ? "Ausgefüllt" : "Jetzt starten"}</span></header>
                   <div className="body"><p>{f.text}</p><span className="tile-cta">{hasCompass ? "Deine Kompass-Karte ansehen" : "Kompass starten"}</span></div>
+                </Link>
+              ) : f.href ? (
+                <Link href={f.href} className="card tile live-tile" key={f.title}>
+                  <header><h3>{f.title}</h3><span className="chip live">{f.href === "/radar" ? `${radarCount} ${radarCount === 1 ? "Meldung" : "Meldungen"}` : "Offen"}</span></header>
+                  <div className="body"><p>{f.text}</p><span className="tile-cta">{f.href === "/radar" ? "Radar öffnen" : "Quelle einreichen"}</span></div>
                 </Link>
               ) : (
                 <article className="card tile" key={f.title}>

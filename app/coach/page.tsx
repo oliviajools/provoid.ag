@@ -19,6 +19,7 @@ export default async function Coach() {
   const host = h.get("x-forwarded-host") ?? h.get("host") ?? "ag.provoid.de";
   const proto = h.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
 
+  const [{ n: pendingNews }] = await sql<{ n: number }[]>`select count(*)::int as n from news_items where status = 'pending' and origin = 'kid'`;
   const groups = await sql<Group[]>`
     select g.id, g.name, g.school, g.code, g.registration_open,
            to_char(g.starts_on, 'DD.MM.YYYY') as starts,
@@ -42,7 +43,8 @@ export default async function Coach() {
               <p className="lead">Leg AGs an, verteil den AG-Code und hilf, wenn jemand sein Passwort vergessen hat.</p>
             </div>
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-              <Link href="/coach/kompass" className="btn">Kompass-Auswertung</Link>
+              <Link href="/coach/radar" className="btn">KI-Radar{pendingNews > 0 ? ` (${pendingNews} neu)` : ""}</Link>
+              <Link href="/coach/kompass" className="btn ghost">Kompass-Auswertung</Link>
               <Link href="/ideen" className="btn ghost">Ideen-Wand</Link>
               <Link href="/start" className="btn ghost">Schüleransicht ansehen</Link>
             </div>

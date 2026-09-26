@@ -338,3 +338,89 @@ a.live-tile:hover .tile-cta { color: var(--text); }
 .head-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
 .pcard .src { font-size: 13px; color: var(--faint); }
 .pcard .src:hover { color: var(--text); }
+
+/* ---------------- KI-Radar ---------------- */
+body:has(.radar-feed) .footer { display: none; }
+main.radar-main { padding: 0; flex: 1; display: flex; }
+.radar-feed {
+  position: relative; width: 100%; height: calc(100dvh - 69px); overflow-y: auto;
+  scroll-snap-type: y mandatory; overscroll-behavior: contain; outline: none;
+}
+.slide {
+  scroll-snap-align: start; scroll-snap-stop: always; min-height: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center; padding: 28px clamp(16px, 5vw, 40px);
+  border-bottom: 1px solid var(--line); overflow-y: auto;
+  background-image: radial-gradient(ellipse at 90% 0%, var(--glow, rgba(132,116,245,.22)), transparent 60%);
+}
+.slide-inner { width: 100%; max-width: 640px; display: flex; flex-direction: column; gap: 18px; margin: auto 0; }
+.slide.intro h1 { font-size: clamp(32px, 6vw, 56px); }
+.scroll-hint { align-self: flex-start; width: 52px; height: 52px; border: 1px solid var(--accent); background: transparent; color: var(--accent); font-size: 22px; cursor: pointer; border-radius: 50%; }
+.scroll-hint:hover { background: var(--accent); color: var(--accent-ink); }
+@media (prefers-reduced-motion: no-preference) {
+  .scroll-hint { animation: nudge 1.8s ease-in-out infinite; }
+  @keyframes nudge { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(6px); } }
+}
+.news-meta { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
+.chip.mine { border-color: var(--warn); color: var(--warn); }
+.news-headline { font-size: clamp(28px, 5.4vw, 44px); line-height: 1.12; }
+.news-tldr { font-size: clamp(18px, 2.4vw, 21px); line-height: 1.55; color: var(--text); }
+.finder { font-size: 15px; color: var(--muted); border-left: 3px solid var(--warn); padding-left: 12px; }
+.finder b { color: var(--warn); font-weight: 600; }
+.news-question { background: var(--surface-2); padding: 14px 16px; font-size: 17px; color: var(--text); display: flex; flex-direction: column; gap: 4px; }
+.news-question span { font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+.more-toggle { align-self: flex-start; }
+.news-more { display: flex; flex-direction: column; gap: 10px; font-size: 15px; color: var(--muted); }
+.news-more b { color: var(--text); }
+.reactions { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.react {
+  position: relative; overflow: hidden; display: flex; justify-content: space-between; align-items: center; gap: 8px;
+  font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; text-align: left; color: var(--text);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px;
+}
+.react:hover { border-color: var(--accent); }
+.react .label, .react .n { position: relative; z-index: 1; }
+.react .n { font-variant-numeric: tabular-nums; color: var(--muted); }
+.react .bar { position: absolute; left: 0; top: 0; bottom: 0; background: rgba(132, 116, 245, 0.22); transition: width .4s ease; }
+.react.on { border-color: var(--accent); }
+.react.on .bar { background: rgba(132, 116, 245, 0.45); }
+.react-hint { margin-top: -6px; }
+.radar-pos { position: fixed; right: 14px; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); font-size: 13px; color: var(--faint); background: var(--bg-deep); border: 1px solid var(--line); padding: 4px 10px; border-radius: 999px; font-variant-numeric: tabular-nums; z-index: 5; }
+@media (max-width: 640px) {
+  .slide { padding-block: 20px; align-items: flex-start; }
+  .slide-inner { gap: 14px; }
+  .reactions { gap: 6px; }
+  .react { font-size: 14px; padding: 10px 12px; }
+}
+
+/* Einreichen */
+.submit-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 28px; align-items: start; }
+.check-q { display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; background: var(--bg); border: 1px solid var(--line); }
+.check-q > span { font-size: 14px; color: var(--text); }
+.status-pill { font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase; padding: 3px 9px; border: 1px solid var(--line); color: var(--faint); white-space: nowrap; }
+.status-pill.published { border-color: #3E7A5A; color: var(--ok); }
+.status-pill.rejected { border-color: #7A3A48; color: var(--danger); }
+.status-pill.pending { border-color: #7A6A3A; color: var(--warn); }
+.subs { display: flex; flex-direction: column; }
+.sub { display: flex; flex-direction: column; gap: 4px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+.sub:last-child { border-bottom: 0; }
+.sub .top { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+.sub a { word-break: break-all; font-size: 14px; }
+
+/* Coach Radar */
+.queue { display: flex; flex-direction: column; gap: 14px; }
+.qitem { background: var(--surface); border: 1px solid var(--line); padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; }
+.qitem .qhead { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: flex-start; }
+.qitem h4 { margin: 0; font-size: 16px; font-weight: 600; color: var(--text); }
+.qitem .qmeta { font-size: 13px; color: var(--faint); display: flex; flex-wrap: wrap; gap: 4px 12px; }
+.qitem .qnote { font-size: 14px; color: var(--muted); border-left: 3px solid var(--warn); padding-left: 10px; }
+.qitem .qactions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.qitem .qactions input[type="text"] { max-width: 320px; padding: 7px 10px; font-size: 14px; }
+.feeds-table td .actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.card-edit { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; align-items: start; }
+.preview-phone { border: 1px solid var(--line); border-radius: 18px; overflow: hidden; height: 640px; }
+.preview-phone .slide { height: 100%; }
+select.select { width: 100%; }
+@media (max-width: 900px) { .submit-grid, .card-edit { grid-template-columns: 1fr; } }
+.radio-pick { display: inline-flex; gap: 8px; align-items: center; }
+.radio-pick input { accent-color: var(--accent); margin: 0; }
+.radio-pick:has(input:checked) { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 700; }
