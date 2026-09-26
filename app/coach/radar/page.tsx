@@ -4,7 +4,7 @@ import { sql } from "@/lib/db";
 import { requireCoach } from "@/lib/auth";
 import { aiEnabled } from "@/lib/news";
 import { Topbar } from "@/components/Topbar";
-import { setStatus, toggleFeed } from "./actions";
+import { discardAllFeed, setStatus, toggleFeed } from "./actions";
 import { AddFeedForm, AddManualForm, ImportButton, QueueActions, TestFeedButton } from "./RadarForms";
 
 export const metadata: Metadata = { title: "KI-Radar verwalten" };
@@ -102,7 +102,12 @@ export default async function CoachRadar() {
           </section>
 
           <section className="section">
-            <h2>Aus deinen Quellen <span className="faint" style={{ fontSize: 16 }}>({feedQueue.length})</span></h2>
+            <div className="welcome" style={{ alignItems: "center" }}>
+              <h2>Aus deinen Quellen <span className="faint" style={{ fontSize: 16 }}>({feedQueue.length})</span></h2>
+              {feedQueue.length > 0 && (
+                <form action={discardAllFeed}><button className="btn ghost small" type="submit">Alle {feedQueue.length} verwerfen</button></form>
+              )}
+            </div>
             <div className="queue">
               {feedQueue.length === 0 ? <p className="muted">Nichts Neues. Aktiviere Quellen unten oder ruf sie mit dem Knopf oben ab. Einmal am Tag passiert das automatisch.</p>
                 : feedQueue.slice(0, 40).map((q) => <QueueItem q={q} key={q.id} />)}

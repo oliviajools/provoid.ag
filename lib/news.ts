@@ -165,7 +165,7 @@ Regeln:
 - Erkläre Fachbegriffe in einfachen Worten, sobald sie vorkommen.
 - Keine Übertreibung, keine Panikmache, keine Werbung.
 - Keine Emojis. Keine Gedankenstriche als Satzzeichen, nutze stattdessen Punkt, Komma oder Doppelpunkt.
-- Antworte ausschließlich mit einem JSON-Objekt, ohne Text davor oder danach.`;
+- Gib die Karte ausschließlich über das Werkzeug karte_speichern zurück.`;
 
 function userPrompt(input: { title: string; source: string; text: string; kidNote?: string }) {
   return `Material:
@@ -177,40 +177,75 @@ Text:
 ${input.text.slice(0, 10000)}
 """
 
-Erstelle daraus dieses JSON:
-{
-  "headline": "Überschrift, höchstens 70 Zeichen, neugierig machend und trotzdem korrekt",
-  "tldr": "Worum geht es? 2 bis 3 kurze Sätze, höchstens 300 Zeichen",
-  "context": "Was steckt dahinter? Erklärt den wichtigsten Begriff oder Hintergrund, 2 Sätze, höchstens 300 Zeichen",
-  "relevance": "Was hat das mit dir zu tun? 1 bis 2 Sätze, konkret aus dem Alltag von Jugendlichen",
-  "question": "Eine offene Frage für die Diskussion in der AG",
-  "check": "Quellen-Check in einem Satz: Wer berichtet, ist es bestätigt oder nur angekündigt, was bleibt offen?",
-  "theme": "genau einer dieser Werte: ${themeKeys.join(", ")}"
-}`;
+Erstelle daraus eine Karte und speichere sie mit dem Werkzeug karte_speichern.`;
 }
+
+const CARD_TOOL = {
+  name: "karte_speichern",
+  description: "Speichert die fertige, jugendgerechte Nachrichtenkarte.",
+  input_schema: {
+    type: "object",
+    properties: {
+      headline: { type: "string", description: "Überschrift, höchstens 70 Zeichen, neugierig machend und korrekt" },
+      tldr: { type: "string", description: "Worum geht es? 2 bis 3 kurze Sätze, höchstens 300 Zeichen" },
+      context: { type: "string", description: "Was steckt dahinter? Erklärt den wichtigsten Begriff, 2 Sätze, höchstens 300 Zeichen" },
+      relevance: { type: "string", description: "Was hat das mit dir zu tun? 1 bis 2 Sätze aus dem Alltag von Jugendlichen" },
+      question: { type: "string", description: "Offene Frage für die Diskussion in der AG" },
+      check: { type: "string", description: "Quellen-Check in einem Satz: Wer berichtet, bestätigt oder nur angekündigt, was bleibt offen?" },
+      theme: { type: "string", enum: themeKeys },
+    },
+    required: ["headline", "tldr", "context", "relevance", "question", "check", "theme"],
+  },
+};
+
+type ApiResponse = {
+  stop_reason?: string;
+  content?: { type: string; text?: string; name?: string; input?: unknown }[];
+};
 
 export async function generateCard(input: { title: string; source: string; text: string; kidNote?: string }): Promise<Card> {
   const base = process.env.ANTHROPIC_BASE_URL ?? "https://api.anthropic.com";
   const res = await fetch(`${base}/v1/messages`, {
     method: "POST",
-    signal: AbortSignal.timeout(45000),
+    signal: AbortSignal.timeout(55000),
     headers: {
       "content-type": "application/json",
-      "x-api-key": process.env.ANTHROPIC_API_KEY ?? "",
+      "x-api-key": (process.env.ANTHROPIC_API_KEY ?? "").trim(),
       "anthropic-version": "2023-06-01",
+      // Nur nötig, wenn der API-Schlüssel keinem Workspace zugeordnet ist
+      ...(process.env.ANTHROPIC_WORKSPACE_ID ? { "anthropic-workspace-id": process.env.ANTHROPIC_WORKSPACE_ID.trim() } : {}),
     },
     body: JSON.stringify({
-      model: process.env.ANTHROPIC_MODEL ?? "claude-sonnet-5",
-      max_tokens: 1200,
+      model: (process.env.ANTHROPIC_MODEL ?? "claude-sonnet-5").trim(),
+      max_tokens: 4000,
       system: SYSTEM,
+      tools: [CARD_TOOL],
+      tool_choice: { type: "tool", name: CARD_TOOL.name },
       messages: [{ role: "user", content: userPrompt(input) }],
     }),
   });
   if (!res.ok) throw new Error(`KI-Dienst antwortet mit Status ${res.status}: ${(await res.text()).slice(0, 200)}`);
-  const data = (await res.json()) as { content?: { type: string; text?: string }[] };
-  const text = data.content?.filter((c) => c.type === "text").map((c) => c.text).join("") ?? "";
-  const json = text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1);
-  return cardSchema.parse(JSON.parse(json));
+  const data = (await res.json()) as ApiResponse;
+  const tool = data.content?.find((c) => c.type === "tool_use" && c.name === CARD_TOOL.name);
+  let raw: unknown = tool?.input;
+  if (!raw) {
+    // Rückfall: JSON aus einer Textantwort herauslesen
+    const text = data.content?.filter((c) => c.type === "text").map((c) => c.text).join("") ?? "";
+    const a = text.indexOf("{"), b = text.lastIndexOf("}");
+    if (a === -1 || b <= a) {
+      throw new Error(`keine Karte in der Antwort (stop_reason: ${data.stop_reason ?? "?"}, Inhalt: ${(data.content ?? []).map((c) => c.type).join(", ") || "leer"})`);
+    }
+    raw = JSON.parse(text.slice(a, b + 1));
+  }
+  const clip = (v: unknown, n: number) => (typeof v === "string" ? v.trim().slice(0, n) : v);
+  const r = raw as Record<string, unknown>;
+  const parsed = cardSchema.safeParse({
+    ...r, headline: clip(r.headline, 110), tldr: clip(r.tldr, 420), context: clip(r.context, 420),
+    relevance: clip(r.relevance, 320), question: clip(r.question, 220), check: clip(r.check, 320),
+    theme: themeKeys.includes(r.theme as ThemeKey) ? r.theme : "kiverstehen",
+  });
+  if (!parsed.success) throw new Error(`Karte unvollständig: ${parsed.error.issues[0].path.join(".")}`);
+  return parsed.data;
 }
 
 /** Material für eine Meldung zusammentragen und daraus eine Karte machen. */

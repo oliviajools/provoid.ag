@@ -163,3 +163,9 @@ export async function addFeed(_: ActState, form: FormData): Promise<ActState> {
   refresh();
   return { ok: `${name} hinzugefügt. Jetzt testen und dann aktivieren.` };
 }
+
+export async function discardAllFeed() {
+  await requireCoach();
+  await sql`update news_items set status = 'rejected' where status = 'pending' and origin = 'feed'`;
+  refresh();
+}

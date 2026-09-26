@@ -112,6 +112,7 @@ DNS: `ag  A  <IP des Hetzner-Servers>`. Caddy holt das HTTPS-Zertifikat automati
 - **Quellen:** Neue Quellen sind inaktiv. Erst „Testen“, dann „Aktivieren“. Der KI-Filter lässt bei gemischten Nachrichtenseiten nur Artikel über KI durch.
 - **Umgebungsvariablen in Vercel:**
   - `ANTHROPIC_API_KEY`: API-Schlüssel von console.anthropic.com. Ohne ihn schreibst du Karten selbst.
+  - `ANTHROPIC_WORKSPACE_ID` (nur falls nötig): Wenn der Schlüssel keinem Workspace zugeordnet ist, die Workspace-ID aus der Anthropic Console (beginnt mit `wrkspc_`).
   - `ANTHROPIC_MODEL` (optional): Standard ist `claude-sonnet-5`.
   - `CRON_SECRET`: beliebige lange Zufallszeichenkette. Vercel schickt sie beim täglichen Abruf mit.
 
