@@ -158,6 +158,52 @@ create table if not exists news_reactions (
   created_at timestamptz not null default now(),
   primary key (item_id, user_id)
 );
+
+-- Sitzungen der AG mit Material und privaten Notizen der Teilnehmenden
+create table if not exists ag_sessions (
+  id          uuid primary key default gen_random_uuid(),
+  group_id    uuid not null references groups(id) on delete cascade,
+  number      int not null,
+  title       text not null default '',
+  date        date,
+  phase       text check (phase in ('durchschauen', 'einordnen', 'bauen')),
+  summary     text not null default '',
+  published   boolean not null default false,
+  created_at  timestamptz not null default now()
+);
+create index if not exists ag_sessions_group on ag_sessions (group_id, number);
+
+create table if not exists materials (
+  id          uuid primary key default gen_random_uuid(),
+  session_id  uuid not null references ag_sessions(id) on delete cascade,
+  kind        text not null check (kind in ('file', 'link', 'text')),
+  title       text not null default '',
+  url         text not null default '',
+  body        text not null default '',
+  filename    text not null default '',
+  mime        text not null default '',
+  size        bigint not null default 0,
+  complete    boolean not null default true,   -- false, solange ein Upload läuft
+  position    int not null default 0,
+  created_at  timestamptz not null default now()
+);
+create index if not exists materials_session on materials (session_id, position);
+
+-- Dateien liegen in Stücken in der Datenbank (auf dem Server in Deutschland)
+create table if not exists material_chunks (
+  material_id uuid not null references materials(id) on delete cascade,
+  idx         int not null,
+  data        bytea not null,
+  primary key (material_id, idx)
+);
+
+create table if not exists notes (
+  user_id     uuid not null references users(id) on delete cascade,
+  session_id  uuid not null references ag_sessions(id) on delete cascade,
+  body        text not null default '',
+  updated_at  timestamptz not null default now(),
+  primary key (user_id, session_id)
+);
 SQL
 
 echo "==> 3/6 Passwort und Zertifikat"

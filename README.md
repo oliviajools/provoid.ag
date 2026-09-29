@@ -116,6 +116,12 @@ DNS: `ag  A  <IP des Hetzner-Servers>`. Caddy holt das HTTPS-Zertifikat automati
   - `ANTHROPIC_MODEL` (optional): Standard ist `claude-sonnet-5`.
   - `CRON_SECRET`: beliebige lange Zufallszeichenkette. Vercel schickt sie beim täglichen Abruf mit.
 
+## Sitzungen und Material
+
+- Coach: `/coach/sitzungen`. Sitzungen einzeln oder als Serie anlegen, Titel, Datum, Phase und Beschreibung pflegen, Dateien (bis 50 MB, PDF, Office, Bilder, Audio, Video), Links und Texte anhängen. Erst nach „Veröffentlichen“ sehen die Teilnehmenden die Sitzung.
+- Dateien werden in Stücken von 3 MB hochgeladen und in der Postgres-Datenbank auf dem Hetzner-Server gespeichert. Downloads prüfen, ob die Person zur AG gehört und die Sitzung veröffentlicht ist.
+- Teilnehmende: `/sitzungen` mit Material und privaten Notizen pro Sitzung (automatisches Speichern), Übersicht aller Notizen unter `/notizen`. Die Coach sieht nur, wie viele Personen Notizen haben, nicht den Inhalt.
+
 ## Nächste Schritte
 
 Kompass-Befragung → KI-Radar → Quellen einreichen → Projekte → Skill-Baum. Jede Funktion bekommt eine eigene Seite unter `app/` und eigene Tabellen in `db/schema.sql`.

@@ -15,6 +15,12 @@ const FEATURES: { href?: string; title: string; when: string; text: string }[] =
     text: "Eine kurze Befragung. Daraus entstehen dein Ziel für die AG, deine Projektidee und die drei Themen, die dich am meisten interessieren.",
   },
   {
+    href: "/sitzungen",
+    title: "Sitzungen und Material",
+    when: "Jede Session",
+    text: "Folien, Links und Aufgaben aus jeder Sitzung zum Nachlesen und Vertiefen. Dazu deine eigenen Notizen, die nur du siehst.",
+  },
+  {
     href: "/radar",
     title: "KI-Radar",
     when: "Jede Session",
@@ -50,6 +56,8 @@ export default async function Start() {
   const [{ n: radarCount }] = await sql<{ n: number }[]>`
     select count(*)::int as n from news_items where status = 'published' and (group_id is null or group_id = ${user.group_id})
       and published_at > now() - interval '7 days'`;
+  const [{ n: sessionCount }] = await sql<{ n: number }[]>`
+    select count(*)::int as n from ag_sessions where published and group_id = ${user.group_id}`;
   const hasCompass = (await sql`select 1 from compass where user_id = ${user.id} and round = 1`).length > 0;
   const before = days !== null && days > 0;
 
@@ -94,8 +102,8 @@ export default async function Start() {
                 </Link>
               ) : f.href ? (
                 <Link href={f.href} className="card tile live-tile" key={f.title}>
-                  <header><h3>{f.title}</h3><span className="chip live">{f.href === "/radar" ? `${radarCount} ${radarCount === 1 ? "Meldung" : "Meldungen"}` : "Offen"}</span></header>
-                  <div className="body"><p>{f.text}</p><span className="tile-cta">{f.href === "/radar" ? "Radar öffnen" : "Quelle einreichen"}</span></div>
+                  <header><h3>{f.title}</h3><span className="chip live">{f.href === "/radar" ? `${radarCount} ${radarCount === 1 ? "Meldung" : "Meldungen"}` : f.href === "/sitzungen" ? `${sessionCount} ${sessionCount === 1 ? "Sitzung" : "Sitzungen"}` : "Offen"}</span></header>
+                  <div className="body"><p>{f.text}</p><span className="tile-cta">{f.href === "/radar" ? "Radar öffnen" : f.href === "/sitzungen" ? "Zu den Sitzungen" : "Quelle einreichen"}</span></div>
                 </Link>
               ) : (
                 <article className="card tile" key={f.title}>
