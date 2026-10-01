@@ -110,6 +110,7 @@ DNS: `ag  A  <IP des Hetzner-Servers>`. Caddy holt das HTTPS-Zertifikat automati
 
 - **Ablauf:** Kids reichen Links ein (`/radar/einreichen`), aktive Quellen werden täglich um 5 Uhr (UTC) abgerufen. Alles landet in deiner Warteschlange unter `/coach/radar`. „Freigeben“ holt den Artikeltext, lässt die KI eine jugendgerechte Karte schreiben und stellt sie sofort ins Radar. Danach kannst du jede Karte bearbeiten oder ausblenden.
 - **Automatisch veröffentlichen:** pro Quelle einschaltbar. Beim täglichen Abruf schreibt die KI die Karten und bewertet sie (1 bis 5). Bis zu `AUTO_PUBLISH_MAX` (Standard 5) Meldungen mit mindestens 3 Punkten gehen direkt ins Radar, der Rest wartet mit fertiger Karte in der Warteschlange.
+- **Aufräumen:** Das Radar zeigt nur Karten der letzten `RADAR_DAYS` Tage (Standard 14). Ältere wandern ins Archiv (`/radar?archiv`). Ungeprüfte Feed-Meldungen werden nach 21 Tagen gelöscht, verworfene nach 30 Tagen.
 - **Quellen:** Neue Quellen sind inaktiv. Erst „Testen“, dann „Aktivieren“. Der KI-Filter lässt bei gemischten Nachrichtenseiten nur Artikel über KI durch.
 - **Umgebungsvariablen in Vercel:**
   - `ANTHROPIC_API_KEY`: API-Schlüssel von console.anthropic.com. Ohne ihn schreibst du Karten selbst.

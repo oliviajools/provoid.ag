@@ -55,7 +55,7 @@ export default async function Start() {
   const days = user.days_until_start;
   const [{ n: radarCount }] = await sql<{ n: number }[]>`
     select count(*)::int as n from news_items where status = 'published' and (group_id is null or group_id = ${user.group_id})
-      and published_at > now() - interval '7 days'`;
+      and published_at > now() - make_interval(days => ${Number(process.env.RADAR_DAYS ?? 14)})`;
   const [{ n: sessionCount }] = await sql<{ n: number }[]>`
     select count(*)::int as n from ag_sessions where published and group_id = ${user.group_id}`;
   const hasCompass = (await sql`select 1 from compass where user_id = ${user.id} and round = 1`).length > 0;

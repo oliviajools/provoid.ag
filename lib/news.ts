@@ -150,6 +150,8 @@ export async function importFeeds(onlyFeedId?: string) {
   }
   // Ungeprüfte Feed-Meldungen nach drei Wochen aufräumen
   await sql`delete from news_items where origin = 'feed' and status = 'pending' and created_at < now() - interval '21 days'`;
+  // Verworfene Feed-Meldungen nach 30 Tagen endgültig löschen
+  await sql`delete from news_items where origin = 'feed' and status = 'rejected' and created_at < now() - interval '30 days'`;
   return results;
 }
 

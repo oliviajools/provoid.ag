@@ -9,10 +9,10 @@ import { react, type Counts } from "./actions";
 
 export type FeedItem = {
   id: string; url: string; source: string; card: Card; finder: string | null; kidNote: string;
-  date: string; week: string; weekLabel: string; myReaction: ReactionId | null; counts: Counts; mineTheme: boolean;
+  date: string; week: string; weekLabel: string; thisWeek: boolean; myReaction: ReactionId | null; counts: Counts; mineTheme: boolean;
 };
 
-export function RadarFeed({ items, canSubmit }: { items: FeedItem[]; canSubmit: boolean }) {
+export function RadarFeed({ items, canSubmit, archive = false, archiveCount = 0 }: { items: FeedItem[]; canSubmit: boolean; archive?: boolean; archiveCount?: number }) {
   const ref = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState(0);
   const total = items.length;
@@ -50,10 +50,14 @@ export function RadarFeed({ items, canSubmit }: { items: FeedItem[]; canSubmit: 
       <div className="radar-feed">
         <section className="slide intro" data-slide>
           <div className="slide-inner">
-            <span className="tag outline">KI-Radar</span>
-            <h1>Noch ist das Radar leer.</h1>
-            <p className="lead">Sobald deine Coach die ersten Meldungen freigegeben hat, erscheinen sie hier.</p>
-            {canSubmit && <Link className="btn" href="/radar/einreichen">Selbst eine Quelle einreichen</Link>}
+            <span className="tag outline">{archive ? "Archiv" : "KI-Radar"}</span>
+            <h1>{archive ? "Das Archiv ist noch leer." : "Gerade gibt es keine neuen Meldungen."}</h1>
+            <p className="lead">{archive ? "Hier landen Meldungen, die älter als zwei Wochen sind." : "Sobald neue Meldungen freigegeben sind, erscheinen sie hier."}</p>
+            <div className="head-actions">
+              {canSubmit && !archive && <Link className="btn" href="/radar/einreichen">Selbst eine Quelle einreichen</Link>}
+              {!archive && archiveCount > 0 && <Link className="btn ghost" href="/radar?archiv">Zum Archiv ({archiveCount})</Link>}
+              {archive && <Link className="btn ghost" href="/radar">Zum aktuellen Radar</Link>}
+            </div>
           </div>
         </section>
       </div>
@@ -72,8 +76,8 @@ export function RadarFeed({ items, canSubmit }: { items: FeedItem[]; canSubmit: 
             {header && (
               <section className="slide intro" data-slide>
                 <div className="slide-inner">
-                  <div className="tags"><span className="tag outline">KI-Radar</span><span className="tag">Woche ab {it.weekLabel}</span></div>
-                  <h1>{i === 0 ? "Was diese Woche in der KI passiert ist." : "Die Woche davor."}</h1>
+                  <div className="tags"><span className="tag outline">{archive ? "Archiv" : "KI-Radar"}</span><span className="tag">Woche ab {it.weekLabel}</span></div>
+                  <h1>{it.thisWeek ? "Was diese Woche in der KI passiert ist." : i === 0 && !archive ? "Was zuletzt in der KI passiert ist." : `Die Woche ab ${it.weekLabel}`}</h1>
                   <p className="lead">{count} {count === 1 ? "Meldung" : "Meldungen"}. Wisch nach oben oder drück die Pfeiltaste.</p>
                   <button type="button" className="scroll-hint" onClick={() => goto(1)} aria-label="Zur ersten Meldung">↓</button>
                 </div>
@@ -86,9 +90,13 @@ export function RadarFeed({ items, canSubmit }: { items: FeedItem[]; canSubmit: 
       <section className="slide intro" data-slide>
         <div className="slide-inner">
           <span className="tag outline">Das war's</span>
-          <h1>Du bist auf dem neuesten Stand.</h1>
+          <h1>{archive ? "Ende des Archivs." : "Du bist auf dem neuesten Stand."}</h1>
           <p className="lead">Du findest unter der Woche selbst etwas Spannendes über KI? Reich es ein. Die besten Funde landen hier, mit deinem Namen.</p>
-          {canSubmit && <Link className="btn" href="/radar/einreichen">Quelle einreichen</Link>}
+          <div className="head-actions">
+            {canSubmit && <Link className="btn" href="/radar/einreichen">Quelle einreichen</Link>}
+            {!archive && archiveCount > 0 && <Link className="btn ghost" href="/radar?archiv">Ältere Meldungen im Archiv ({archiveCount})</Link>}
+            {archive && <Link className="btn ghost" href="/radar">Zum aktuellen Radar</Link>}
+          </div>
         </div>
       </section>
       <div className="radar-pos" aria-live="polite">{Math.min(pos + 1, total)} / {total}</div>
