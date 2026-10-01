@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { sql } from "@/lib/db";
 import { requireCoach } from "@/lib/auth";
-import { aiEnabled, buildCardForItem, cardSchema, emptyCard, importFeeds, testFeed } from "@/lib/news";
+import { aiEnabled, autoPublish, buildCardForItem, cardSchema, emptyCard, importFeeds, testFeed } from "@/lib/news";
 
 export type ActState = { ok?: string; error?: string } | undefined;
 
@@ -22,6 +22,9 @@ function refresh() {
 export async function approve(_: ActState, form: FormData): Promise<ActState> {
   await requireCoach();
   const id = String(form.get("id"));
+  // Karte schon vorhanden (z. B. automatisch vorbereitet): direkt veröffentlichen
+  const ready = await sql`update news_items set status = 'published', published_at = now() where id = ${id} and card is not null and status = 'pending' returning id`;
+  if (ready.length) { refresh(); return { ok: "Veröffentlicht." }; }
   if (!aiEnabled()) redirect(`/coach/radar/${id}`);
   const item = await loadItem(id);
   if (!item) return { error: "Meldung nicht gefunden." };
@@ -115,11 +118,13 @@ export async function ensureDraft(id: string) {
 export async function importNow(_: ActState): Promise<ActState> {
   await requireCoach();
   const res = await importFeeds();
-  refresh();
   if (res.length === 0) return { error: "Keine aktive Quelle. Teste und aktiviere zuerst mindestens eine." };
+  const auto = await autoPublish();
+  refresh();
   const added = res.reduce((a, r) => a + r.added, 0);
   const errors = res.filter((r) => r.error).map((r) => r.name);
-  return { ok: `${added} neue Meldungen in der Warteschlange.${errors.length ? ` Fehler bei: ${errors.join(", ")}.` : ""}` };
+  const autoMsg = auto.published || auto.queued ? ` Automatisch veröffentlicht: ${auto.published}, mit fertiger Karte zur Prüfung: ${auto.queued}.` : "";
+  return { ok: `${added} neue Meldungen abgerufen.${autoMsg}${errors.length ? ` Fehler bei: ${errors.join(", ")}.` : ""}` };
 }
 
 export async function testFeedAction(_: ActState, form: FormData): Promise<ActState> {
@@ -146,6 +151,7 @@ export async function toggleFeed(form: FormData) {
   const field = String(form.get("field"));
   if (field === "active") await sql`update feeds set active = not active where id = ${id}`;
   if (field === "filter") await sql`update feeds set keyword_filter = not keyword_filter where id = ${id}`;
+  if (field === "auto") await sql`update feeds set auto_publish = not auto_publish where id = ${id}`;
   if (field === "delete") await sql`delete from feeds where id = ${id}`;
   refresh();
 }

@@ -193,8 +193,12 @@ const CARD_TOOL = {
       question: { type: "string", description: "Offene Frage für die Diskussion in der AG" },
       check: { type: "string", description: "Quellen-Check in einem Satz: Wer berichtet, bestätigt oder nur angekündigt, was bleibt offen?" },
       theme: { type: "string", enum: themeKeys },
+      score: {
+        type: "integer", minimum: 1, maximum: 5,
+        description: "Wie gut passt die Meldung ins KI-Radar einer Schul-AG für 13- bis 18-Jährige? 5 = wichtig, verständlich und spannend für Jugendliche. 3 = okay. 1 = nur für Fachleute oder Unternehmen interessant (z. B. Software für Firmen, Börsenkurse, Produktwerbung) oder nicht über KI oder ungeeignet für Jugendliche.",
+      },
     },
-    required: ["headline", "tldr", "context", "relevance", "question", "check", "theme"],
+    required: ["headline", "tldr", "context", "relevance", "question", "check", "theme", "score"],
   },
 };
 
@@ -203,7 +207,7 @@ type ApiResponse = {
   content?: { type: string; text?: string; name?: string; input?: unknown }[];
 };
 
-export async function generateCard(input: { title: string; source: string; text: string; kidNote?: string }): Promise<Card> {
+export async function generateCard(input: { title: string; source: string; text: string; kidNote?: string }): Promise<{ card: Card; score: number }> {
   const base = process.env.ANTHROPIC_BASE_URL ?? "https://api.anthropic.com";
   const res = await fetch(`${base}/v1/messages`, {
     method: "POST",
@@ -245,7 +249,9 @@ export async function generateCard(input: { title: string; source: string; text:
     theme: themeKeys.includes(r.theme as ThemeKey) ? r.theme : "kiverstehen",
   });
   if (!parsed.success) throw new Error(`Karte unvollständig: ${parsed.error.issues[0].path.join(".")}`);
-  return parsed.data;
+  const sc = Math.round(Number(r.score));
+  const { ...card } = parsed.data;
+  return { card, score: sc >= 1 && sc <= 5 ? sc : 3 };
 }
 
 /** Material für eine Meldung zusammentragen und daraus eine Karte machen. */
@@ -262,10 +268,47 @@ export async function buildCardForItem(item: { url: string; title: string; sourc
     // Seite nicht abrufbar (z. B. Paywall oder Social Media): dann mit Titel, Teaser und Kommentar arbeiten
   }
   source ||= new URL(item.url).hostname.replace(/^www\./, "");
-  const card = await generateCard({ title, source, text: text || title, kidNote: item.kid_note });
-  return { card, title, source };
+  const { card, score } = await generateCard({ title, source, text: text || title, kidNote: item.kid_note });
+  return { card, title, source, score };
 }
 
 export function emptyCard(title: string): Card {
   return { headline: title.slice(0, 110) || "Neue Meldung", tldr: "", context: "", relevance: "", question: "", check: "", theme: "kiverstehen" };
+}
+
+/* ------------------------------ Automatisch veröffentlichen ------------------------------ */
+
+export const AUTO_MIN_SCORE = 3;
+const AUTO_MAX_PER_RUN = Number(process.env.AUTO_PUBLISH_MAX ?? 5);
+
+/**
+ * Neue Meldungen aus Quellen mit „automatisch veröffentlichen“: KI schreibt die Karte und bewertet,
+ * ob sie für Jugendliche passt. Nur gut bewertete Meldungen gehen direkt ins Radar, der Rest bleibt
+ * mit fertiger Karte in der Warteschlange der Coach.
+ */
+export async function autoPublish() {
+  if (!aiEnabled()) return { published: 0, queued: 0, skipped: "ANTHROPIC_API_KEY fehlt" };
+  const items = await sql<{ id: string; url: string; title: string; source_name: string; excerpt: string; kid_note: string }[]>`
+    select n.id, n.url, n.title, n.source_name, n.excerpt, n.kid_note
+    from news_items n join feeds f on f.id = n.feed_id
+    where n.origin = 'feed' and n.status = 'pending' and not n.ai_tried and f.auto_publish
+      and n.created_at > now() - interval '3 days'
+    order by coalesce(n.source_date, n.created_at) desc
+    limit ${AUTO_MAX_PER_RUN * 2}`;
+  if (items.length === 0) return { published: 0, queued: 0 };
+  await sql`update news_items set ai_tried = true where id in ${sql(items.map((i) => i.id))}`;
+  const results = await Promise.allSettled(items.map((i) => buildCardForItem(i).then((r) => ({ ...r, id: i.id }))));
+  const ok = results.flatMap((r) => (r.status === "fulfilled" ? [r.value] : []));
+  ok.sort((a, b) => b.score - a.score);
+  let published = 0, queued = 0;
+  for (const r of ok) {
+    const publish = r.score >= AUTO_MIN_SCORE && published < AUTO_MAX_PER_RUN;
+    await sql`
+      update news_items set card = ${sql.json(r.card)}, card_by_ai = true, title = ${r.title}, source_name = ${r.source},
+        ai_score = ${r.score}, auto_published = ${publish},
+        status = ${publish ? "published" : "pending"}, published_at = ${publish ? sql`now()` : null}
+      where id = ${r.id} and status = 'pending'`;
+    if (publish) published++; else queued++;
+  }
+  return { published, queued, failed: results.length - ok.length };
 }
