@@ -124,6 +124,11 @@ DNS: `ag  A  <IP des Hetzner-Servers>`. Caddy holt das HTTPS-Zertifikat automati
 - Dateien werden in Stücken von 3 MB hochgeladen und in der Postgres-Datenbank auf dem Hetzner-Server gespeichert. Downloads prüfen, ob die Person zur AG gehört und die Sitzung veröffentlicht ist.
 - Teilnehmende: `/sitzungen` mit Material und privaten Notizen pro Sitzung (automatisches Speichern), Übersicht aller Notizen unter `/notizen`. Die Coach sieht nur, wie viele Personen Notizen haben, nicht den Inhalt.
 
+## Themenwünsche und Gäste
+
+- `/themen`: Teilnehmende tragen Themen ein (auf Wunsch anonym) und stimmen mit „will ich auch“ ab. Die Coach setzt den Status (offen, eingeplant, besprochen, ausgeblendet), schreibt eine Notiz für alle dazu oder löscht Einträge. Die Coach sieht auch bei anonymen Wünschen das Pseudonym.
+- `/coach/gaeste`: Gäste mit Name, Rolle, Thema, Vorstellung, Datum, Uhrzeit, Sitzung und Link anlegen. Erst nach „Ankündigen“ sichtbar. Teilnehmende schicken unter `/gaeste` bis zu drei Fragen pro Gast, die nur die Coach sieht. Der nächste Gast erscheint als Hinweis auf der Startseite.
+
 ## Nächste Schritte
 
 Kompass-Befragung → KI-Radar → Quellen einreichen → Projekte → Skill-Baum. Jede Funktion bekommt eine eigene Seite unter `app/` und eigene Tabellen in `db/schema.sql`.

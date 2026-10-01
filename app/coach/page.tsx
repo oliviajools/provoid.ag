@@ -45,6 +45,8 @@ export default async function Coach() {
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
               <Link href="/coach/radar" className="btn">KI-Radar{pendingNews > 0 ? ` (${pendingNews} neu)` : ""}</Link>
               <Link href="/coach/sitzungen" className="btn ghost">Sitzungen und Material</Link>
+              <Link href="/coach/gaeste" className="btn ghost">Gäste</Link>
+              <Link href="/themen" className="btn ghost">Themenwünsche</Link>
               <Link href="/coach/kompass" className="btn ghost">Kompass-Auswertung</Link>
               <Link href="/ideen" className="btn ghost">Ideen-Wand</Link>
               <Link href="/start" className="btn ghost">Schüleransicht ansehen</Link>

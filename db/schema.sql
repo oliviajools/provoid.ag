@@ -161,3 +161,47 @@ alter table feeds add column if not exists auto_publish boolean not null default
 alter table news_items add column if not exists ai_score smallint;
 alter table news_items add column if not exists ai_tried boolean not null default false;
 alter table news_items add column if not exists auto_published boolean not null default false;
+
+-- Themenwünsche der Teilnehmenden
+create table if not exists topic_wishes (
+  id          uuid primary key default gen_random_uuid(),
+  group_id    uuid not null references groups(id) on delete cascade,
+  user_id     uuid references users(id) on delete cascade,
+  title       text not null,
+  details     text not null default '',
+  anonymous   boolean not null default false,
+  status      text not null default 'open' check (status in ('open', 'planned', 'done', 'hidden')),
+  coach_note  text not null default '',
+  created_at  timestamptz not null default now()
+);
+create index if not exists topic_wishes_group on topic_wishes (group_id, status);
+create table if not exists topic_votes (
+  wish_id  uuid not null references topic_wishes(id) on delete cascade,
+  user_id  uuid not null references users(id) on delete cascade,
+  primary key (wish_id, user_id)
+);
+
+-- Gäste, die die AG besuchen, und Fragen der Teilnehmenden an sie
+create table if not exists guests (
+  id          uuid primary key default gen_random_uuid(),
+  group_id    uuid not null references groups(id) on delete cascade,
+  name        text not null,
+  role        text not null default '',
+  topic       text not null default '',
+  bio         text not null default '',
+  link        text not null default '',
+  date        date,
+  time_label  text not null default '',
+  session_id  uuid references ag_sessions(id) on delete set null,
+  questions_open boolean not null default true,
+  published   boolean not null default false,
+  created_at  timestamptz not null default now()
+);
+create index if not exists guests_group on guests (group_id, date);
+create table if not exists guest_questions (
+  id          uuid primary key default gen_random_uuid(),
+  guest_id    uuid not null references guests(id) on delete cascade,
+  user_id     uuid references users(id) on delete cascade,
+  body        text not null,
+  created_at  timestamptz not null default now()
+);

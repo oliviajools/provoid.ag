@@ -469,3 +469,42 @@ a.srow:hover .stitle { color: var(--accent); }
   .mat .mat-actions { grid-column: 1 / -1; justify-content: flex-start; }
 }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+/* ---------------- Themenwünsche ---------------- */
+.wish { display: grid; grid-template-columns: 84px 1fr; gap: 16px; padding: 16px 18px; background: var(--surface); border: 1px solid var(--line); align-items: start; }
+.wish.muted-wish { opacity: .7; }
+.wish h3 { font-size: 18px; }
+.wish-head { display: flex; gap: 10px; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; }
+.vote-btn { width: 84px; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px 4px; cursor: pointer;
+  background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); color: var(--muted); font: inherit; }
+.vote-btn .n { font-family: var(--font-display), sans-serif; font-weight: 700; font-size: 24px; color: var(--text); line-height: 1.1; }
+.vote-btn .l { font-size: 11.5px; letter-spacing: .04em; text-transform: uppercase; text-align: center; line-height: 1.25; }
+.vote-btn:hover:not(:disabled) { border-color: var(--accent); }
+.vote-btn.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.vote-btn.on .n { color: var(--accent-ink); }
+.vote-btn:disabled { cursor: default; }
+.coach-note { font-size: 14px; color: var(--text); background: var(--surface-2); padding: 8px 12px; border-left: 3px solid var(--accent); }
+
+/* ---------------- Gäste ---------------- */
+.guest { display: grid; grid-template-columns: 120px 1fr; gap: 22px; padding: 22px; background: var(--surface); border: 1px solid var(--line); align-items: start; }
+.guest.next { border-color: var(--accent); background-image: radial-gradient(ellipse at 100% 0%, rgba(132,116,245,.22), transparent 60%); }
+.guest .when { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 14px 8px; background: var(--surface-2); text-align: center; }
+.guest .when .d { font-family: var(--font-display), sans-serif; font-weight: 700; font-size: 30px; line-height: 1; color: var(--text); }
+.guest .when .m { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.guest .when .t { font-size: 12.5px; color: var(--faint); margin-top: 4px; }
+.guest h2 { font-size: clamp(22px, 3vw, 28px); }
+.guest .role { color: var(--accent); font-weight: 600; }
+.guest .bio { color: var(--muted); white-space: pre-line; }
+.guest-banner { display: flex; gap: 18px; align-items: center; justify-content: space-between; flex-wrap: wrap; padding: 18px 22px; border: 1px solid var(--accent);
+  background-image: radial-gradient(ellipse at 100% 0%, rgba(132,116,245,.25), transparent 60%); text-decoration: none; color: inherit; }
+.guest-banner:hover { background-color: #1B1850; color: inherit; }
+.guest-banner .label { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+.guest-banner b { font-family: var(--font-display), sans-serif; font-size: 20px; color: var(--text); }
+.questions { display: flex; flex-direction: column; gap: 8px; }
+.question { padding: 10px 12px; background: var(--bg); border: 1px solid var(--line); font-size: 15px; color: var(--text); display: flex; justify-content: space-between; gap: 12px; }
+@media (max-width: 640px) {
+  .guest { grid-template-columns: 1fr; }
+  .guest .when { flex-direction: row; justify-content: flex-start; gap: 10px; padding: 10px 14px; }
+  .wish { grid-template-columns: 64px 1fr; gap: 12px; }
+  .vote-btn { width: 64px; }
+}

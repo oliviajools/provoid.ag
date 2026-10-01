@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { sql } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
+import { nextGuest } from "@/lib/guests";
 import { Topbar } from "@/components/Topbar";
 
 export const metadata: Metadata = { title: "Start" };
@@ -19,6 +20,18 @@ const FEATURES: { href?: string; title: string; when: string; text: string }[] =
     title: "Sitzungen und Material",
     when: "Jede Session",
     text: "Folien, Links und Aufgaben aus jeder Sitzung zum Nachlesen und Vertiefen. Dazu deine eigenen Notizen, die nur du siehst.",
+  },
+  {
+    href: "/themen",
+    title: "Themenwünsche",
+    when: "Jederzeit",
+    text: "Was interessiert dich an KI? Trag Themen ein und stimm bei den Wünschen der anderen ab. Was viele wollen, kommt in die AG.",
+  },
+  {
+    href: "/gaeste",
+    title: "Gäste",
+    when: "Angekündigt",
+    text: "Wer die AG besuchen kommt. Schick vorab deine Fragen, deine Coach bringt sie mit in den Besuch.",
   },
   {
     href: "/radar",
@@ -58,6 +71,9 @@ export default async function Start() {
       and published_at > now() - make_interval(days => ${Number(process.env.RADAR_DAYS ?? 14)})`;
   const [{ n: sessionCount }] = await sql<{ n: number }[]>`
     select count(*)::int as n from ag_sessions where published and group_id = ${user.group_id}`;
+  const [{ n: wishCount }] = await sql<{ n: number }[]>`
+    select count(*)::int as n from topic_wishes where group_id = ${user.group_id} and status in ('open', 'planned')`;
+  const guest = await nextGuest(user.group_id);
   const hasCompass = (await sql`select 1 from compass where user_id = ${user.id} and round = 1`).length > 0;
   const before = days !== null && days > 0;
 
@@ -74,8 +90,8 @@ export default async function Start() {
               </div>
               <h1>Hallo, {user.pseudonym}.</h1>
               <p className="lead">
-                Hier entsteht Schritt für Schritt deine AG-Plattform. Starte mit deinem Kompass, die anderen
-                Bereiche schalten wir nach und nach frei.
+                Hier findest du alles rund um die AG: deinen Kompass, das Material aus den Sitzungen, die neuesten
+                KI-Meldungen und wer uns als Nächstes besuchen kommt.
               </p>
             </div>
             {before && (
@@ -89,10 +105,21 @@ export default async function Start() {
             )}
           </section>
 
+          {guest && (
+            <Link href={`/gaeste#gast-${guest.id}`} className="guest-banner">
+              <div className="stack" style={{ gap: 4 }}>
+                <span className="label">Nächster Gast · {guest.weekday} {guest.day}. {guest.month}{guest.time_label ? `, ${guest.time_label}` : ""}</span>
+                <b>{guest.name}</b>
+                <span className="muted">{[guest.role, guest.topic].filter(Boolean).join(" · ")}</span>
+              </div>
+              <span className="btn ghost small">{guest.questions_open ? "Frage vorab schicken" : "Mehr erfahren"}</span>
+            </Link>
+          )}
+
           <section className="section" aria-labelledby="features">
             <div className="stack" style={{ gap: 8 }}>
               <h2 id="features">Das erwartet dich hier.</h2>
-              <p className="muted">Jede Funktion bekommt ihren eigenen Bereich. Was noch kommt, ist schon markiert.</p>
+              <p className="muted">Deine Bereiche auf einen Blick.</p>
             </div>
             <div className="tiles">
               {FEATURES.map((f) => f.href === "/kompass" ? (
@@ -102,8 +129,8 @@ export default async function Start() {
                 </Link>
               ) : f.href ? (
                 <Link href={f.href} className="card tile live-tile" key={f.title}>
-                  <header><h3>{f.title}</h3><span className="chip live">{f.href === "/radar" ? `${radarCount} ${radarCount === 1 ? "Meldung" : "Meldungen"}` : f.href === "/sitzungen" ? `${sessionCount} ${sessionCount === 1 ? "Sitzung" : "Sitzungen"}` : "Offen"}</span></header>
-                  <div className="body"><p>{f.text}</p><span className="tile-cta">{f.href === "/radar" ? "Radar öffnen" : f.href === "/sitzungen" ? "Zu den Sitzungen" : "Quelle einreichen"}</span></div>
+                  <header><h3>{f.title}</h3><span className="chip live">{f.href === "/radar" ? `${radarCount} ${radarCount === 1 ? "Meldung" : "Meldungen"}` : f.href === "/sitzungen" ? `${sessionCount} ${sessionCount === 1 ? "Sitzung" : "Sitzungen"}` : f.href === "/themen" ? `${wishCount} ${wishCount === 1 ? "Wunsch" : "Wünsche"}` : f.href === "/gaeste" ? (guest ? `nächster am ${guest.day}.${guest.month ? " " + guest.month : ""}` : "bald") : "Offen"}</span></header>
+                  <div className="body"><p>{f.text}</p><span className="tile-cta">{f.href === "/radar" ? "Radar öffnen" : f.href === "/sitzungen" ? "Zu den Sitzungen" : f.href === "/themen" ? "Thema eintragen" : f.href === "/gaeste" ? "Gäste ansehen" : "Quelle einreichen"}</span></div>
                 </Link>
               ) : (
                 <article className="card tile" key={f.title}>

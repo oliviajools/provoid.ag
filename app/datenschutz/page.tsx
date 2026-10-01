@@ -28,6 +28,8 @@ export default async function Datenschutz() {
               <li>fehlgeschlagene Login-Versuche für höchstens 24 Stunden, um dein Konto vor dem Durchprobieren von Passwörtern zu schützen</li>
               <li>deine Antworten im Kompass. Sie sehen nur du und deine Coach, außer dein Traumprojekt, wenn du es für die Ideen-Wand freigibst</li>
               <li>Links, die du im KI-Radar einreichst, mit deinem Kommentar und Quellen-Check, sowie deine Reaktionen auf Meldungen. Reaktionen werden nur als Gesamtzahl angezeigt</li>
+              <li>Themenwünsche, die du einträgst, und deine Stimmen dafür. Wünsche sehen alle aus deiner AG, mit deinem Pseudonym oder anonym, wie du es wählst</li>
+              <li>Fragen, die du vorab an Gäste schickst. Sie sieht nur deine Coach</li>
               <li>deine Notizen zu den Sitzungen. Sie sind privat: Auch deine Coach sieht nur, dass es Notizen gibt, nicht was drinsteht</li>
             </ul>
 
