@@ -18,7 +18,7 @@ export default async function Datenschutz() {
             <p>Kurz gesagt: Wir speichern so wenig wie möglich. Du brauchst keine E-Mail-Adresse und keinen echten Namen.</p>
 
             <h2>Wer ist verantwortlich?</h2>
-            <p>PROVOID, [Name und Anschrift laut Impressum], E-Mail: [Kontaktadresse].</p>
+            <p>PROVOID, Olivia Bahr, Eppendorfer Landstraße 15, Hamburg, E-Mail: [Kontaktadresse].</p>
 
             <h2>Was wird gespeichert?</h2>
             <ul>
