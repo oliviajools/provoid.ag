@@ -262,7 +262,7 @@ create table if not exists signup_forms (
   title     text not null,
   school    text not null default '',
   intro     text not null default '',
-  options   jsonb not null default '[]',   -- [{id, label, detail, capacity}]
+  options   jsonb not null default '[]',   -- [{id, label, detail}]
   open      boolean not null default true,
   created_at timestamptz not null default now()
 );
@@ -288,9 +288,16 @@ insert into signup_forms (slug, title, school, intro, options) values (
   'Anmeldung zur KI-AG',
   'Gelehrtenschule des Johanneums',
   'In der KI-AG verstehen die Jugendlichen zuerst, wie Künstliche Intelligenz funktioniert und wo sie scheitert, ordnen ein, was sie mit uns und der Welt macht, und bauen am Ende einen eigenen KI-Agenten. Die AG läuft bis Ende Juni 2027 und ist für die Familien kostenlos, die Finanzierung übernimmt der Förderverein.',
-  '[{"id":"9-10","label":"Jahrgang 9 und 10","detail":"mittwochs in den ungeraden Kalenderwochen, ab 4. November 2026, 15 Termine à 60 Minuten","capacity":16},
-    {"id":"11-12","label":"Jahrgang 11 und 12","detail":"wöchentlich montags, 12:10 bis 13:10 Uhr, ab 9. November 2026, 27 Termine","capacity":16}]'
+  '[{"id":"9-10","label":"Jahrgang 9 und 10","detail":"mittwochs in den ungeraden Kalenderwochen, ab 4. November 2026, je 60 Minuten"},
+    {"id":"11-12","label":"Jahrgang 11 und 12","detail":"wöchentlich montags, 12:10 bis 13:10 Uhr, ab 9. November 2026"}]'
 ) on conflict (slug) do nothing;
+
+-- Ohne Terminanzahl und ohne Teilnehmerbegrenzung (aktualisiert ältere Einträge einmalig)
+update signup_forms set options =
+  '[{"id":"9-10","label":"Jahrgang 9 und 10","detail":"mittwochs in den ungeraden Kalenderwochen, ab 4. November 2026, je 60 Minuten"},
+    {"id":"11-12","label":"Jahrgang 11 und 12","detail":"wöchentlich montags, 12:10 bis 13:10 Uhr, ab 9. November 2026"}]'
+where slug = 'johanneum' and (options::text like '%Termine%' or options::text like '%capacity%');
+update signups set waitlist = false where waitlist;
 SQL
 
 echo "==> 3/6 Passwort und Zertifikat"

@@ -11,7 +11,7 @@ export const metadata: Metadata = { title: "Anmeldungen" };
 export const dynamic = "force-dynamic";
 
 type Row = { id: string; form_id: string; option_id: string; child_first: string; child_last: string; class_name: string;
-  parent_name: string; email: string; phone: string; photo_ok: boolean; notes: string; waitlist: boolean; created: string };
+  parent_name: string; email: string; phone: string; photo_ok: boolean; notes: string; created: string };
 
 export default async function Anmeldungen() {
   const coach = await requireCoach();
@@ -20,7 +20,7 @@ export default async function Anmeldungen() {
   const proto = h.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
   const forms = await sql<SignupForm[]>`select id, slug, title, school, intro, options, open from signup_forms order by created_at`;
   const rows = await sql<Row[]>`
-    select id, form_id, option_id, child_first, child_last, class_name, parent_name, email, phone, photo_ok, notes, waitlist,
+    select id, form_id, option_id, child_first, child_last, class_name, parent_name, email, phone, photo_ok, notes,
            to_char(created_at at time zone 'Europe/Berlin', 'DD.MM. HH24:MI') as created
     from signups order by created_at`;
 
@@ -55,18 +55,16 @@ export default async function Anmeldungen() {
                 </div>
                 {f.options.map((o) => {
                   const g = list.filter((r) => r.option_id === o.id);
-                  const placed = g.filter((r) => !r.waitlist);
-                  const waiting = g.filter((r) => r.waitlist);
                   return (
                     <section className="card" key={o.id}>
                       <header>
                         <h3>{o.label}</h3>
-                        <span className={`chip${placed.length >= o.capacity ? "" : " live"}`}>{placed.length} von {o.capacity} Plätzen{waiting.length ? ` · ${waiting.length} auf der Warteliste` : ""}</span>
+                        <span className="chip live">{g.length} {g.length === 1 ? "Anmeldung" : "Anmeldungen"}</span>
                       </header>
                       <div className="body table-wrap">
                         {g.length === 0 ? <p className="muted">Noch keine Anmeldungen.</p> : (
                           <table>
-                            <thead><tr><th>Kind</th><th>Klasse</th><th>Eltern</th><th>Kontakt</th><th>Fotos</th><th>Angemeldet</th><th>Status</th><th></th></tr></thead>
+                            <thead><tr><th>Kind</th><th>Klasse</th><th>Eltern</th><th>Kontakt</th><th>Fotos</th><th>Angemeldet</th><th></th></tr></thead>
                             <tbody>
                               {g.map((r) => (
                                 <tr key={r.id}>
@@ -76,11 +74,8 @@ export default async function Anmeldungen() {
                                   <td style={{ wordBreak: "break-all" }}>{r.email}{r.phone && <><br />{r.phone}</>}</td>
                                   <td>{r.photo_ok ? "ja" : "nein"}</td>
                                   <td>{r.created}</td>
-                                  <td><span className={`status-pill ${r.waitlist ? "pending" : "published"}`}>{r.waitlist ? "Warteliste" : "Platz"}</span></td>
                                   <td>
                                     <div className="actions">
-                                      <form action={signupAction}><input type="hidden" name="id" value={r.id} /><input type="hidden" name="op" value="waitlist" />
-                                        <button className="btn ghost small" type="submit">{r.waitlist ? "Platz geben" : "Auf Warteliste"}</button></form>
                                       <form action={signupAction}><input type="hidden" name="id" value={r.id} /><input type="hidden" name="op" value="delete" />
                                         <button className="linkish" type="submit" style={{ padding: 0 }}>Löschen</button></form>
                                     </div>

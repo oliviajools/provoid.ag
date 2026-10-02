@@ -9,7 +9,6 @@ export async function signupAction(form: FormData) {
   const id = String(form.get("id"));
   const op = String(form.get("op"));
   if (op === "delete") await sql`delete from signups where id = ${id}`;
-  if (op === "waitlist") await sql`update signups set waitlist = not waitlist where id = ${id}`;
   revalidatePath("/coach/anmeldungen");
 }
 

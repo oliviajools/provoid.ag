@@ -18,13 +18,13 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
   const [f] = await sql<{ slug: string; options: { id: string; label: string }[] }[]>`select slug, options from signup_forms where id = ${id}`;
   if (!f) return new Response("Nicht gefunden", { status: 404 });
   const rows = await sql`
-    select option_id, waitlist, child_first, child_last, class_name, parent_name, email, phone, photo_ok, notes,
+    select option_id, child_first, child_last, class_name, parent_name, email, phone, photo_ok, notes,
            to_char(created_at at time zone 'Europe/Berlin', 'DD.MM.YYYY HH24:MI') as created
-    from signups where form_id = ${id} order by option_id, waitlist, created_at`;
+    from signups where form_id = ${id} order by option_id, created_at`;
   const label = (o: string) => f.options.find((x) => x.id === o)?.label ?? o;
-  const header = ["Gruppe", "Status", "Vorname", "Nachname", "Klasse", "Erziehungsberechtigte Person", "E-Mail", "Telefon", "Fotos erlaubt", "Anmerkungen", "Angemeldet am"];
+  const header = ["Gruppe", "Vorname", "Nachname", "Klasse", "Erziehungsberechtigte Person", "E-Mail", "Telefon", "Fotos erlaubt", "Anmerkungen", "Angemeldet am"];
   const lines = [header.map(esc).join(";")].concat(rows.map((r) => [
-    label(r.option_id), r.waitlist ? "Warteliste" : "Platz", r.child_first, r.child_last, r.class_name,
+    label(r.option_id), r.child_first, r.child_last, r.class_name,
     r.parent_name, r.email, r.phone, r.photo_ok ? "ja" : "nein", r.notes, r.created,
   ].map(esc).join(";")));
   return new Response("﻿" + lines.join("\r\n"), {

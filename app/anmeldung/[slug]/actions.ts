@@ -5,11 +5,11 @@ import { headers } from "next/headers";
 import { z } from "zod";
 import { sql } from "@/lib/db";
 import { isLockedOut, recordFailure } from "@/lib/auth";
-import { countsFor, loadForm } from "@/lib/signups";
+import { loadForm } from "@/lib/signups";
 
 export type SignupState =
   | { error?: string; fields?: Record<string, string> }
-  | { done: true; child: string; option: string; waitlist: boolean; email: string }
+  | { done: true; child: string; option: string; email: string }
   | undefined;
 
 const schema = z.object({
@@ -54,12 +54,10 @@ export async function submitSignup(slug: string, _: SignupState, form: FormData)
                         and lower(child_last) = lower(${d.child_last}) and lower(class_name) = lower(${d.class_name})`;
   if (dup.length) return { error: "Für dieses Kind liegt bereits eine Anmeldung vor. Bei Änderungen melden Sie sich bitte direkt bei uns.", fields };
 
-  const counts = await countsFor(f.id);
-  const waitlist = (counts[option.id] ?? 0) >= option.capacity;
   await sql`
-    insert into signups (form_id, option_id, child_first, child_last, class_name, parent_name, email, phone, photo_ok, notes, waitlist)
+    insert into signups (form_id, option_id, child_first, child_last, class_name, parent_name, email, phone, photo_ok, notes)
     values (${f.id}, ${option.id}, ${d.child_first}, ${d.child_last}, ${d.class_name}, ${d.parent_name}, ${d.email}, ${d.phone},
-            ${d.photo_ok}, ${d.notes}, ${waitlist})`;
+            ${d.photo_ok}, ${d.notes})`;
   await recordFailure(key); // zählt die Anmeldung für die Begrenzung pro Stunde
-  return { done: true, child: `${d.child_first} ${d.child_last}`, option: option.label, waitlist, email: d.email };
+  return { done: true, child: `${d.child_first} ${d.child_last}`, option: option.label, email: d.email };
 }

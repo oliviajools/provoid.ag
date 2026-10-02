@@ -5,7 +5,7 @@ import { useActionState } from "react";
 import { SubmitButton } from "@/components/SubmitButton";
 import type { SignupState } from "./actions";
 
-type Opt = { id: string; label: string; detail: string; full: boolean };
+type Opt = { id: string; label: string; detail: string };
 
 export function SignupForm({ action, options }: { action: (s: SignupState, f: FormData) => Promise<SignupState>; options: Opt[] }) {
   const [s, a] = useActionState<SignupState, FormData>(action, undefined);
@@ -14,9 +14,7 @@ export function SignupForm({ action, options }: { action: (s: SignupState, f: Fo
     return (
       <div className="body">
         <div className="alert ok" role="status" style={{ fontSize: 16 }}>
-          {s.waitlist
-            ? <>Vielen Dank! <b>{s.child}</b> steht auf der <b>Warteliste</b> für {s.option}. Sobald ein Platz frei wird, melden wir uns unter {s.email}.</>
-            : <>Vielen Dank! <b>{s.child}</b> ist für <b>{s.option}</b> angemeldet. Weitere Informationen und den AG-Code für die Lernplattform gibt es beim ersten Termin.</>}
+          Vielen Dank! <b>{s.child}</b> ist für <b>{s.option}</b> angemeldet. Weitere Informationen und den AG-Code für die Lernplattform gibt es beim ersten Termin.
         </div>
         <p className="muted">Sie erhalten keine automatische Bestätigungsmail. Machen Sie gern einen Screenshot dieser Seite. Bei Fragen oder für eine Abmeldung erreichen Sie uns über provoid.de.</p>
       </div>
@@ -36,7 +34,7 @@ export function SignupForm({ action, options }: { action: (s: SignupState, f: Fo
             <label key={o.id} className="option radio-option">
               <input type="radio" name="option_id" value={o.id} defaultChecked={f.option_id === o.id} />
               <span className="stack" style={{ gap: 2 }}>
-                <b>{o.label}{o.full && <span className="chip" style={{ marginLeft: 8 }}>voll, Warteliste</span>}</b>
+                <b>{o.label}</b>
                 <span>{o.detail}</span>
               </span>
             </label>
