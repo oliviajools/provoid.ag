@@ -129,6 +129,13 @@ DNS: `ag  A  <IP des Hetzner-Servers>`. Caddy holt das HTTPS-Zertifikat automati
 - `/themen`: Teilnehmende tragen Themen ein (auf Wunsch anonym) und stimmen mit „will ich auch“ ab. Die Coach setzt den Status (offen, eingeplant, besprochen, ausgeblendet), schreibt eine Notiz für alle dazu oder löscht Einträge. Die Coach sieht auch bei anonymen Wünschen das Pseudonym.
 - `/coach/gaeste`: Gäste mit Name, Rolle, Thema, Vorstellung, Datum, Uhrzeit, Sitzung und Link anlegen. Erst nach „Ankündigen“ sichtbar. Teilnehmende schicken unter `/gaeste` bis zu drei Fragen pro Gast, die nur die Coach sieht. Der nächste Gast erscheint als Hinweis auf der Startseite.
 
+## Anmeldeformular für Eltern
+
+- Öffentlich unter `/anmeldung/<slug>`, zum Beispiel `/anmeldung/johanneum`. Kein Login nötig.
+- Gruppen und Platzzahl stehen in der Tabelle `signup_forms` (Feld `options`). Ist eine Gruppe voll, landen weitere Anmeldungen automatisch auf der Warteliste.
+- Coach: `/coach/anmeldungen` mit Übersicht, Warteliste, Löschen, Anmeldung öffnen oder schließen und CSV-Export (öffnet in Excel).
+- Schutz: verstecktes Feld gegen Bots, Begrenzung pro Anschluss, keine doppelten Anmeldungen. Es wird keine Bestätigungsmail verschickt.
+
 ## Nächste Schritte
 
 Kompass-Befragung → KI-Radar → Quellen einreichen → Projekte → Skill-Baum. Jede Funktion bekommt eine eigene Seite unter `app/` und eigene Tabellen in `db/schema.sql`.

@@ -508,3 +508,11 @@ a.srow:hover .stitle { color: var(--accent); }
   .wish { grid-template-columns: 64px 1fr; gap: 12px; }
   .vote-btn { width: 64px; }
 }
+
+/* Anmeldeformular */
+.fs { border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.fs legend { font-family: var(--font-display), sans-serif; font-weight: 700; font-size: 17px; color: var(--text); margin-bottom: 12px; padding: 0; }
+.radio-option { flex-direction: row !important; gap: 12px !important; align-items: flex-start; }
+.radio-option input { margin-top: 4px; width: 18px; height: 18px; accent-color: var(--accent); flex: none; }
+.radio-option:has(input:checked) { border-color: var(--accent); background: #1E1A5C; box-shadow: inset 3px 0 0 var(--accent); }
+.signup-summary { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }

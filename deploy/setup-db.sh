@@ -254,6 +254,43 @@ create table if not exists guest_questions (
   body        text not null,
   created_at  timestamptz not null default now()
 );
+
+-- Öffentliche Anmeldeformulare für Eltern (z. B. ag.provoid.de/anmeldung/johanneum)
+create table if not exists signup_forms (
+  id        uuid primary key default gen_random_uuid(),
+  slug      text not null unique,
+  title     text not null,
+  school    text not null default '',
+  intro     text not null default '',
+  options   jsonb not null default '[]',   -- [{id, label, detail, capacity}]
+  open      boolean not null default true,
+  created_at timestamptz not null default now()
+);
+create table if not exists signups (
+  id          uuid primary key default gen_random_uuid(),
+  form_id     uuid not null references signup_forms(id) on delete cascade,
+  option_id   text not null,
+  child_first text not null,
+  child_last  text not null,
+  class_name  text not null,
+  parent_name text not null,
+  email       text not null,
+  phone       text not null default '',
+  photo_ok    boolean not null default false,
+  notes       text not null default '',
+  waitlist    boolean not null default false,
+  created_at  timestamptz not null default now()
+);
+create index if not exists signups_form on signups (form_id, option_id, created_at);
+
+insert into signup_forms (slug, title, school, intro, options) values (
+  'johanneum',
+  'Anmeldung zur KI-AG',
+  'Gelehrtenschule des Johanneums',
+  'In der KI-AG verstehen die Jugendlichen zuerst, wie Künstliche Intelligenz funktioniert und wo sie scheitert, ordnen ein, was sie mit uns und der Welt macht, und bauen am Ende einen eigenen KI-Agenten. Die AG läuft bis Ende Juni 2027 und ist für die Familien kostenlos, die Finanzierung übernimmt der Förderverein.',
+  '[{"id":"9-10","label":"Jahrgang 9 und 10","detail":"mittwochs in den ungeraden Kalenderwochen, ab 4. November 2026, 15 Termine à 60 Minuten","capacity":16},
+    {"id":"11-12","label":"Jahrgang 11 und 12","detail":"wöchentlich montags, 12:10 bis 13:10 Uhr, ab 9. November 2026, 27 Termine","capacity":16}]'
+) on conflict (slug) do nothing;
 SQL
 
 echo "==> 3/6 Passwort und Zertifikat"
