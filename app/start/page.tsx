@@ -65,6 +65,8 @@ const PHASES = [
 
 export default async function Start() {
   const user = await requireUser();
+  // QR-Code zur Anmeldung nur für die Gruppe am Gymnasium Eppendorf (und für Coaches)
+  const showQr = user.role === "coach" || /epp/i.test(`${user.group_school ?? ""} ${user.group_name ?? ""}`);
   const days = user.days_until_start;
   const [{ n: radarCount }] = await sql<{ n: number }[]>`
     select count(*)::int as n from news_items where status = 'published' and (group_id is null or group_id = ${user.group_id})
@@ -156,6 +158,17 @@ export default async function Start() {
               ))}
             </div>
           </section>
+
+          {showQr && <section className="section qr-invite" aria-labelledby="einladen">
+            <div className="qr-box">
+              <img src="/qr-anmeldung-gymepp.png" alt="QR-Code zur Anmeldung für die KI-AG am Gymnasium Eppendorf" width={180} height={180} />
+            </div>
+            <div className="stack" style={{ gap: 8 }}>
+              <h2 id="einladen">Bring deine Leute mit.</h2>
+              <p className="muted">Freundinnen und Freunde, die auch mitmachen wollen, scannen einfach den Code. Er führt zur Anmeldung, die ihre Eltern ausfüllen.</p>
+              <p><a href="/anmeldung/gymepp">ag.provoid.de/anmeldung/gymepp</a></p>
+            </div>
+          </section>}
         </div>
       </main>
     </>
