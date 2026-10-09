@@ -33,13 +33,13 @@ export default async function Anmeldung({ params }: { params: Promise<{ slug: st
             <p className="muted">Kein Vorwissen nötig.</p>
             <section id="datenschutz" className="prose" style={{ fontSize: 14, gap: 8 }}>
               <h2 style={{ fontSize: 18, marginTop: 8 }}>Datenschutzhinweise zur Anmeldung</h2>
-              <p>Verantwortlich ist PROVOID, Olivia Bahr, Eppendorfer Landstraße 15, Hamburg. Wir verwenden Ihre Angaben ausschließlich, um die AG zu organisieren und Sie bei Bedarf zu kontaktieren. Die Daten liegen auf einem Server in Deutschland und werden nicht an Dritte weitergegeben, außer an die Schule, soweit sie für die Organisation nötig sind. Nach Ende der AG löschen wir sie. Sie können jederzeit Auskunft, Berichtigung oder Löschung verlangen und Ihre Einwilligung widerrufen.</p>
+              <p>Verantwortlich ist PROVOID, Olivia Bahr, Adlerhorst 18, 22459 Hamburg. Wir verwenden Ihre Angaben ausschließlich, um die AG zu organisieren und Sie bei Bedarf zu kontaktieren. Die Daten liegen auf einem Server in Deutschland und werden nicht an Dritte weitergegeben, außer an die Schule, soweit sie für die Organisation nötig sind. Nach Ende der AG löschen wir sie. Sie können jederzeit Auskunft, Berichtigung oder Löschung verlangen und Ihre Einwilligung widerrufen.</p>
             </section>
           </section>
           <section className="card" style={{ maxWidth: 560 }} aria-labelledby="form-title">
             <header><h3 id="form-title">{f.open ? "Anmeldeformular" : "Anmeldung geschlossen"}</h3></header>
             {f.open
-              ? <SignupForm action={action} options={f.options.map((o) => ({ id: o.id, label: o.label, detail: o.detail }))} />
+              ? <SignupForm action={action} runsUntil={f.runs_until} options={f.options.map((o) => ({ id: o.id, label: o.label, detail: o.detail }))} />
               : <div className="body"><p className="muted">Die Anmeldung ist derzeit geschlossen. Bei Fragen erreichen Sie uns über provoid.de.</p></div>}
           </section>
         </div>

@@ -7,14 +7,14 @@ import type { SignupState } from "./actions";
 
 type Opt = { id: string; label: string; detail: string };
 
-export function SignupForm({ action, options }: { action: (s: SignupState, f: FormData) => Promise<SignupState>; options: Opt[] }) {
+export function SignupForm({ action, options, runsUntil }: { action: (s: SignupState, f: FormData) => Promise<SignupState>; options: Opt[]; runsUntil: string }) {
   const [s, a] = useActionState<SignupState, FormData>(action, undefined);
 
   if (s && "done" in s) {
     return (
       <div className="body">
         <div className="alert ok" role="status" style={{ fontSize: 16 }}>
-          Vielen Dank! <b>{s.child}</b> ist für <b>{s.option}</b> angemeldet. Weitere Informationen und den AG-Code für die Lernplattform gibt es beim ersten Termin.
+          Vielen Dank! <b>{s.child}</b> ist für die KI-AG angemeldet ({s.option}). Weitere Informationen und den AG-Code für die Lernplattform gibt es beim ersten Termin.
         </div>
         <p className="muted">Sie erhalten keine automatische Bestätigungsmail. Machen Sie gern einen Screenshot dieser Seite. Bei Fragen oder für eine Abmeldung erreichen Sie uns über provoid.de.</p>
       </div>
@@ -32,7 +32,7 @@ export function SignupForm({ action, options }: { action: (s: SignupState, f: Fo
         <div className="options">
           {options.map((o) => (
             <label key={o.id} className="option radio-option">
-              <input type="radio" name="option_id" value={o.id} defaultChecked={f.option_id === o.id} />
+              <input type="radio" name="option_id" value={o.id} defaultChecked={f.option_id === o.id || options.length === 1} />
               <span className="stack" style={{ gap: 2 }}>
                 <b>{o.label}</b>
                 <span>{o.detail}</span>
@@ -66,7 +66,7 @@ export function SignupForm({ action, options }: { action: (s: SignupState, f: Fo
 
       <fieldset className="fs">
         <legend>Einverständnis</legend>
-        <label className="check"><input type="checkbox" name="consent_participation" /><span>Ich melde mein Kind verbindlich für die KI-AG an. Die AG läuft bis Ende Juni 2027. Eine Abmeldung ist jederzeit formlos möglich.</span></label>
+        <label className="check"><input type="checkbox" name="consent_participation" /><span>Ich melde mein Kind verbindlich für die KI-AG an.{runsUntil && ` Die AG läuft bis ${runsUntil}.`} Eine Abmeldung ist jederzeit formlos möglich.</span></label>
         <label className="check"><input type="checkbox" name="consent_platform" /><span>Mein Kind darf die Lernplattform ag.provoid.de nutzen. Es meldet sich dort nur mit einem AG-Code und einem selbst gewählten Pseudonym an, ohne Klarnamen und ohne E-Mail-Adresse.</span></label>
         <label className="check"><input type="checkbox" name="consent_privacy" /><span>Ich habe die <Link href="#datenschutz">Datenschutzhinweise zur Anmeldung</Link> gelesen und bin mit der Verarbeitung der Angaben einverstanden.</span></label>
         <label className="check"><input type="checkbox" name="photo_ok" /><span><b style={{ color: "var(--text)" }}>Freiwillig:</b> Fotos aus der AG, auf denen mein Kind zu erkennen ist, dürfen für die Website der Schule und von PROVOID verwendet werden. Diese Einwilligung kann ich jederzeit widerrufen.</span></label>

@@ -131,7 +131,7 @@ DNS: `ag  A  <IP des Hetzner-Servers>`. Caddy holt das HTTPS-Zertifikat automati
 
 ## Anmeldeformular für Eltern
 
-- Öffentlich unter `/anmeldung/<slug>`, zum Beispiel `/anmeldung/johanneum`. Kein Login nötig.
+- Öffentlich unter `/anmeldung/<slug>`, zum Beispiel `/anmeldung/johanneum` oder `/anmeldung/gymepp`. Kein Login nötig.
 - Gruppen stehen in der Tabelle `signup_forms` (Feld `options`). Es gibt keine Teilnehmerbegrenzung.
 - Coach: `/coach/anmeldungen` mit Übersicht, Löschen, Anmeldung öffnen oder schließen und CSV-Export (öffnet in Excel).
 - Schutz: verstecktes Feld gegen Bots, Begrenzung pro Anschluss, keine doppelten Anmeldungen. Es wird keine Bestätigungsmail verschickt.

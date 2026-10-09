@@ -206,7 +206,7 @@ create table if not exists guest_questions (
   created_at  timestamptz not null default now()
 );
 
--- Öffentliche Anmeldeformulare für Eltern (z. B. ag.provoid.de/anmeldung/johanneum)
+-- Öffentliche Anmeldeformulare für Eltern (z. B. ag.provoid.de/anmeldung/johanneum oder /gymepp)
 create table if not exists signup_forms (
   id        uuid primary key default gen_random_uuid(),
   slug      text not null unique,
@@ -249,3 +249,16 @@ update signup_forms set options =
     {"id":"11-12","label":"Jahrgang 11 und 12","detail":"wöchentlich montags, 12:10 bis 13:10 Uhr, ab 9. November 2026"}]'
 where slug = 'johanneum' and (options::text like '%Termine%' or options::text like '%capacity%');
 update signups set waitlist = false where waitlist;
+
+-- Laufzeit pro Formular (erscheint in der Einwilligung)
+alter table signup_forms add column if not exists runs_until text not null default '';
+update signup_forms set runs_until = 'Ende Juni 2027' where slug = 'johanneum' and runs_until = '';
+
+insert into signup_forms (slug, title, school, intro, options, runs_until) values (
+  'gymepp',
+  'Anmeldung zur KI-AG',
+  'Gymnasium Eppendorf',
+  'In der KI-AG verstehen die Jugendlichen zuerst, wie Künstliche Intelligenz funktioniert und wo sie scheitert, ordnen ein, was sie mit uns und der Welt macht, und bauen am Ende einen eigenen KI-Agenten. Die AG läuft von Oktober 2026 bis März 2027.',
+  '[{"id":"ag","label":"Mittwochs, 14:05 Uhr","detail":"in Raum 205, ab 14. Oktober 2026"}]',
+  'Ende März 2027'
+) on conflict (slug) do nothing;
