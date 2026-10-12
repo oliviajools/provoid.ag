@@ -287,7 +287,7 @@ insert into signup_forms (slug, title, school, intro, options) values (
   'johanneum',
   'Anmeldung zur KI-AG',
   'Gelehrtenschule des Johanneums',
-  'In der KI-AG verstehen die Jugendlichen zuerst, wie Künstliche Intelligenz funktioniert und wo sie scheitert, ordnen ein, was sie mit uns und der Welt macht, und bauen am Ende einen eigenen KI-Agenten. Die AG läuft bis Ende Juni 2027 und ist für die Familien kostenlos, die Finanzierung übernimmt der Förderverein.',
+  'In der KI-AG verstehen die Jugendlichen zuerst, wie Künstliche Intelligenz funktioniert und wo sie scheitert, ordnen ein, was sie mit uns und der Welt macht, und bauen am Ende einen eigenen KI-Agenten. Die AG läuft bis Ende Juni 2027 und ist für die Familien kostenlos, die Finanzierung übernimmt die Schule.',
   '[{"id":"9-10","label":"Jahrgang 9 und 10","detail":"mittwochs in den ungeraden Kalenderwochen, ab 4. November 2026, je 60 Minuten"},
     {"id":"11-12","label":"Jahrgang 11 und 12","detail":"wöchentlich montags, 12:10 bis 13:10 Uhr, ab 9. November 2026"}]'
 ) on conflict (slug) do nothing;
@@ -311,6 +311,10 @@ insert into signup_forms (slug, title, school, intro, options, runs_until) value
   '[{"id":"ag","label":"Mittwochs, 14:05 Uhr","detail":"in Raum 205, ab 14. Oktober 2026"}]',
   'Ende März 2027'
 ) on conflict (slug) do nothing;
+
+-- Johanneum: Finanzierung durch die Schule statt Förderverein
+update signup_forms set intro = replace(intro, 'die Finanzierung übernimmt der Förderverein', 'die Finanzierung übernimmt die Schule')
+where slug = 'johanneum' and intro like '%Förderverein%';
 SQL
 
 echo "==> 3/6 Passwort und Zertifikat"
