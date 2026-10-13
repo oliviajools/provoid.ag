@@ -36,6 +36,7 @@ export default async function SessionPage({ params }: { params: Promise<{ id: st
       <Topbar pseudonym={user.pseudonym} home={user.role === "coach" ? "/coach" : "/start"} />
       <main>
         <div className="container page" style={{ gap: 32 }}>
+          {user.role === "student" && <LivePanel sessionId={id} />}
           <section className="stack" style={{ gap: 14 }}>
             <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
               <Link href="/sitzungen">Alle Sitzungen</Link>
@@ -52,8 +53,6 @@ export default async function SessionPage({ params }: { params: Promise<{ id: st
             <h1>{s.title || `Sitzung ${s.number}`}</h1>
             {s.summary && <p className="lead" style={{ whiteSpace: "pre-line" }}><Linkify text={s.summary} /></p>}
           </section>
-
-          {user.role === "student" && <LivePanel sessionId={id} />}
 
           <div className="session-layout">
             <section className="section" style={{ gap: 16 }}>

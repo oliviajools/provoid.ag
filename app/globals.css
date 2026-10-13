@@ -601,3 +601,7 @@ a.srow:hover .stitle { color: var(--accent); }
 .live-banner b { flex: 1; font-size: 17px; }
 .live-banner:hover { background: var(--surface-2); color: var(--text); }
 .live-actions { display: flex; gap: 10px 16px; flex-wrap: wrap; align-items: center; }
+.live-toast { position: fixed; left: 50%; top: 14px; transform: translateX(-50%); z-index: 60; background: var(--accent); color: var(--accent-ink); font-weight: 700; padding: 12px 18px; box-shadow: 0 8px 30px rgba(0,0,0,.4); display: flex; align-items: center; gap: 8px; max-width: calc(100vw - 32px); }
+.live-toast .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #0B0A2E; animation: livepulse 1.4s ease-in-out infinite; }
+.live-card.flash { animation: liveflash 1.2s ease-out; }
+@keyframes liveflash { 0% { box-shadow: 0 0 0 6px var(--accent); } 100% { box-shadow: 0 0 0 1px var(--accent) inset; } }

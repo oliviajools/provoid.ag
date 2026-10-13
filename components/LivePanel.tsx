@@ -32,7 +32,7 @@ export function LivePanel({ sessionId }: { sessionId: string }) {
       load().finally(() => {
         if (!alive) return;
         const live = stateRef.current?.live;
-        timer = window.setTimeout(loop, document.hidden ? 15000 : live ? 2500 : 10000);
+        timer = window.setTimeout(loop, document.hidden ? 15000 : live ? 2000 : 5000);
       });
     }
     loop();
@@ -41,10 +41,18 @@ export function LivePanel({ sessionId }: { sessionId: string }) {
     return () => { alive = false; window.clearTimeout(timer); document.removeEventListener("visibilitychange", onVis); };
   }, [sessionId]);
 
+  const card = useRef<HTMLElement>(null);
+  const activeId = state?.active?.id ?? null;
+  useEffect(() => {
+    if (!activeId || !card.current) return;
+    card.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    card.current.classList.remove("flash"); void card.current.offsetWidth; card.current.classList.add("flash");
+  }, [activeId]);
+
   if (!state?.live) return null;
   const a = state.active;
   return (
-    <section className="card live-card" aria-live="polite">
+    <section ref={card} className="card live-card" aria-live="polite" style={{ scrollMarginTop: 16 }}>
       <header><h3>{a ? a.title : "Live"}</h3><span className="chip live"><span className="dot" aria-hidden="true" /> live</span></header>
       <div className="body">
         {!a && <p className="muted">Die Sitzung läuft. Schau nach vorne, hier erscheint gleich die nächste Aufgabe.</p>}
