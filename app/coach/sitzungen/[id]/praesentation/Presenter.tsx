@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { LiveResults, type BoardActive, type BoardResult } from "@/components/LiveResults";
 
-type Board = { slide: number | null; stored: number | null; online: number; published: boolean; active: BoardActive | null; result?: BoardResult };
+type Board = { slide: number | null; stored: number | null; online: number; items: number; published: boolean; active: BoardActive | null; result?: BoardResult };
 
 export function Presenter({ sessionId, number, title, published }: { sessionId: string; number: number; title: string; published: boolean }) {
   const frame = useRef<HTMLIFrameElement>(null);
@@ -128,7 +128,8 @@ export function Presenter({ sessionId, number, title, published }: { sessionId: 
   const active = board?.active ?? null;
   const problem = stopped ? null
     : syncError ? `Tablets bekommen die Folie nicht: ${syncError}`
-    : board && !board.published ? "Sitzung ist nicht veröffentlicht: Die Tablets sehen nichts." : null;
+    : board && !board.published ? "Sitzung ist nicht veröffentlicht: Die Tablets sehen nichts."
+    : board && board.items === 0 ? "Diese Sitzung hat noch keine Interaktionen. Schließen, unter „Vorlage einfügen“ die Vorlage wählen, dann neu starten." : null;
   const count = board?.result ? (board.result.kind === "wall" ? board.result.entries.length : board.result.respondents) : 0;
   const countLabel = board?.result?.kind === "wall" ? (count === 1 ? "Zettel" : "Zettel") : count === 1 ? "Antwort" : "Antworten";
 
