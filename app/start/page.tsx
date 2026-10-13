@@ -65,6 +65,10 @@ const PHASES = [
 
 export default async function Start() {
   const user = await requireUser();
+  const [liveNow] = user.group_id ? await sql<{ id: string; number: number }[]>`
+    select id, number from ag_sessions
+    where group_id = ${user.group_id} and published and live_slide is not null and live_at > now() - interval '3 hours'
+    order by live_at desc limit 1` : [];
   // QR-Code zur Anmeldung nur für die Gruppe am Gymnasium Eppendorf (und für Coaches)
   const showQr = user.role === "coach" || /epp/i.test(`${user.group_school ?? ""} ${user.group_name ?? ""}`);
   const days = user.days_until_start;
@@ -84,6 +88,13 @@ export default async function Start() {
       <Topbar pseudonym={user.pseudonym} home={user.role === "coach" ? "/coach" : "/start"} />
       <main>
         <div className="container page">
+          {liveNow && (
+            <Link href={`/sitzungen/${liveNow.id}`} className="card live-card live-banner">
+              <span className="chip live"><span className="dot" aria-hidden="true" /> live</span>
+              <b>Sitzung {liveNow.number} läuft gerade. Hier mitmachen</b>
+              <span aria-hidden="true">→</span>
+            </Link>
+          )}
           <section className="welcome">
             <div className="stack" style={{ gap: 18 }}>
               <div className="tags">

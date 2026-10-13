@@ -315,6 +315,48 @@ insert into signup_forms (slug, title, school, intro, options, runs_until) value
 -- Johanneum: Finanzierung durch die Schule statt Förderverein
 update signup_forms set intro = replace(intro, 'die Finanzierung übernimmt der Förderverein', 'die Finanzierung übernimmt die Schule')
 where slug = 'johanneum' and intro like '%Förderverein%';
+
+-- Live-Interaktionen während der Sitzung (gekoppelt an die Folien)
+alter table ag_sessions add column if not exists live_slide int;
+alter table ag_sessions add column if not exists live_at timestamptz;
+
+create table if not exists session_decks (
+  session_id  uuid primary key references ag_sessions(id) on delete cascade,
+  filename    text not null default '',
+  html        text not null,
+  slides      int not null default 0,
+  uploaded_at timestamptz not null default now()
+);
+
+create table if not exists live_items (
+  id            uuid primary key default gen_random_uuid(),
+  session_id    uuid not null references ag_sessions(id) on delete cascade,
+  position      int not null default 0,
+  title         text not null,
+  kind          text not null check (kind in ('grid', 'wall', 'text')),
+  slide         int,            -- Folie, auf der die Interaktion startet
+  until_slide   int,            -- bleibt offen bis einschließlich dieser Folie
+  reveal_slide  int,            -- auf dieser Folie sehen alle die Auflösung
+  rows          jsonb not null default '[]',   -- Aussagen, Spalten oder Fragen
+  options       jsonb not null default '[]',   -- Antwortmöglichkeiten (nur grid)
+  solution      jsonb,                         -- richtige Option je Zeile (optional)
+  private       boolean not null default false, -- Antworten nur für den Coach
+  homework      boolean not null default false, -- immer offen auf der Sitzungsseite
+  closed        boolean not null default false,
+  created_at    timestamptz not null default now()
+);
+create index if not exists live_items_session on live_items (session_id, position);
+
+create table if not exists live_responses (
+  id         uuid primary key default gen_random_uuid(),
+  item_id    uuid not null references live_items(id) on delete cascade,
+  user_id    uuid not null references users(id) on delete cascade,
+  key        text not null,
+  value      text not null,
+  created_at timestamptz not null default now(),
+  unique (item_id, user_id, key)
+);
+create index if not exists live_responses_item on live_responses (item_id);
 SQL
 
 echo "==> 3/6 Passwort und Zertifikat"

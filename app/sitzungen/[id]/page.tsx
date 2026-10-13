@@ -7,6 +7,8 @@ import { PHASES, canView, germanDay, loadSession } from "@/lib/sessions";
 import { Topbar } from "@/components/Topbar";
 import { Linkify, MaterialList, type Material } from "@/components/MaterialList";
 import { NotesEditor } from "../NotesEditor";
+import { LivePanel, TextQuestions } from "@/components/LivePanel";
+import { loadItems, myAnswers } from "@/lib/live";
 
 export const metadata: Metadata = { title: "Sitzung" };
 export const dynamic = "force-dynamic";
@@ -26,6 +28,8 @@ export default async function SessionPage({ params }: { params: Promise<{ id: st
   const nav = await sql<{ id: string; number: number }[]>`
     select id, number from ag_sessions where group_id = ${s.group_id} ${user.role === "coach" ? sql`` : sql`and published`} order by number`;
   const pos = nav.findIndex((n) => n.id === id);
+  const homework = (await loadItems(id)).filter((i) => i.homework && !i.closed && i.kind === "text");
+  const hwAnswers = user.role === "student" ? await Promise.all(homework.map((h) => myAnswers(h.id, user.id))) : [];
 
   return (
     <>
@@ -49,6 +53,8 @@ export default async function SessionPage({ params }: { params: Promise<{ id: st
             {s.summary && <p className="lead" style={{ whiteSpace: "pre-line" }}><Linkify text={s.summary} /></p>}
           </section>
 
+          {user.role === "student" && <LivePanel sessionId={id} />}
+
           <div className="session-layout">
             <section className="section" style={{ gap: 16 }}>
               <h2>Material</h2>
@@ -63,6 +69,17 @@ export default async function SessionPage({ params }: { params: Promise<{ id: st
               </section>
             )}
           </div>
+
+          {homework.map((h, k) => (
+            <section className="card" key={h.id}>
+              <header><h3>{h.title}</h3><span className="chip mine">Hausaufgabe</span></header>
+              <div className="body">
+                {user.role === "student"
+                  ? <TextQuestions sessionId={id} itemId={h.id} rows={h.rows} initial={hwAnswers[k]} isPrivate={h.private} />
+                  : <ul>{h.rows.map((r, i) => <li key={i}>{r}</li>)}</ul>}
+              </div>
+            </section>
+          ))}
         </div>
       </main>
     </>

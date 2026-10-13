@@ -139,3 +139,11 @@ DNS: `ag  A  <IP des Hetzner-Servers>`. Caddy holt das HTTPS-Zertifikat automati
 ## Nächste Schritte
 
 Kompass-Befragung → KI-Radar → Quellen einreichen → Projekte → Skill-Baum. Jede Funktion bekommt eine eigene Seite unter `app/` und eigene Tabellen in `db/schema.sql`.
+
+## Live-Interaktionen während der Sitzung
+
+- Coach: unter Sitzung → "Live während der Sitzung" den Foliensatz als HTML hochladen (Export aus Claude Slides, höchstens 4 MB) und Interaktionen anlegen oder eine Vorlage einfügen (`lib/live.ts`, `TEMPLATES`).
+- "Präsentation starten" öffnet `/coach/sitzungen/<id>/praesentation`. Der Foliensatz läuft dort abgeschottet in einem iframe (sandbox ohne Zugriff auf die Plattform) und meldet die aktuelle Folie. Tasten: Pfeile oder Klick zum Blättern, E für Ergebnisse, F für Vollbild.
+- Arten: Abstimmung (auch mehrere Aussagen, optional mit Lösung und Auflösungsfolie), Pinnwand (freie Zettel, mehrere Spalten), Fragen mit Textantwort (optional privat oder als Hausaufgabe).
+- Teilnehmende sehen die passende Aufgabe automatisch auf der Sitzungsseite (Abfrage alle 2,5 Sekunden), auf der Startseite erscheint ein Hinweis, solange die Sitzung live ist. Live endet nach drei Stunden ohne Lebenszeichen oder mit "Live beenden".
+- Auf der Tafel erscheinen alle Antworten ohne Namen. Mit Namen sieht sie nur der Coach unter "Antworten mit Namen ansehen".
