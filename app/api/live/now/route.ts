@@ -1,7 +1,7 @@
 import { sql } from "@/lib/db";
 import { getUser } from "@/lib/auth";
 import { LIVE_HOURS, activeFor, loadItems } from "@/lib/live";
-import { json } from "@/lib/live-api";
+import { json, touchPresence } from "@/lib/live-api";
 
 export const dynamic = "force-dynamic";
 
@@ -9,6 +9,7 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   const user = await getUser();
   if (!user || user.role !== "student" || !user.group_id) return json({ live: null });
+  await touchPresence(user);
   const [s] = await sql<{ id: string; number: number; live_slide: number }[]>`
     select id, number, live_slide from ag_sessions
     where group_id = ${user.group_id} and published and live_slide is not null

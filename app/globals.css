@@ -605,3 +605,4 @@ a.srow:hover .stitle { color: var(--accent); }
 .live-toast .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #0B0A2E; animation: livepulse 1.4s ease-in-out infinite; }
 .live-card.flash { animation: liveflash 1.2s ease-out; }
 @keyframes liveflash { 0% { box-shadow: 0 0 0 6px var(--accent); } 100% { box-shadow: 0 0 0 1px var(--accent) inset; } }
+.presenter-problem { position: absolute; top: 18px; left: 18px; z-index: 6; background: #3A1420; border: 1px solid var(--danger); color: var(--danger); padding: 10px 14px; font-size: 15px; max-width: 46vw; }

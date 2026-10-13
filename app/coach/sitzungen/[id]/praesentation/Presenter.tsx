@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { LiveResults, type BoardActive, type BoardResult } from "@/components/LiveResults";
 
-type Board = { slide: number | null; active: BoardActive | null; result?: BoardResult };
+type Board = { slide: number | null; stored: number | null; online: number; published: boolean; active: BoardActive | null; result?: BoardResult };
 
 export function Presenter({ sessionId, number, title, published }: { sessionId: string; number: number; title: string; published: boolean }) {
   const frame = useRef<HTMLIFrameElement>(null);
@@ -16,6 +16,7 @@ export function Presenter({ sessionId, number, title, published }: { sessionId: 
   const [showResults, setShowResults] = useState(false);
   const [bar, setBar] = useState(true);
   const [stopped, setStopped] = useState(false);
+  const [syncError, setSyncError] = useState<string | null>(null);
   const idle = useRef<number | undefined>(undefined);
 
   // Foliensatz laden
@@ -70,17 +71,26 @@ export function Presenter({ sessionId, number, title, published }: { sessionId: 
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [onKey, slide, total]);
 
-  // Aktuelle Folie an die Plattform melden
+  // Aktuelle Folie an die Plattform melden (mit Wiederholung, falls die Verbindung hakt)
   useEffect(() => {
     if (slide === null || stopped) return;
-    const t = window.setTimeout(() => {
-      fetch(`/api/live/${sessionId}/slide`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ slide }) }).catch(() => {});
-    }, 120);
-    // Lebenszeichen, damit der Live-Modus nicht abläuft
-    const keep = window.setInterval(() => {
-      fetch(`/api/live/${sessionId}/slide`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ slide }) }).catch(() => {});
-    }, 5 * 60 * 1000);
-    return () => { window.clearTimeout(t); window.clearInterval(keep); };
+    let alive = true;
+    let retry: number | undefined;
+    async function post() {
+      try {
+        const r = await fetch(`/api/live/${sessionId}/slide`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ slide }) });
+        if (!alive) return;
+        if (r.ok) { setSyncError(null); return; }
+        const d = await r.json().catch(() => ({}));
+        setSyncError(`${d.error ?? "Fehler"} (${r.status})`);
+      } catch {
+        if (alive) setSyncError("Keine Internetverbindung");
+      }
+      if (alive) retry = window.setTimeout(post, 3000);
+    }
+    const t = window.setTimeout(post, 100);
+    const keep = window.setInterval(post, 60 * 1000);
+    return () => { alive = false; window.clearTimeout(t); window.clearTimeout(retry); window.clearInterval(keep); };
   }, [slide, sessionId, stopped]);
 
   // Ergebnisse der aktuellen Interaktion abfragen
@@ -90,6 +100,7 @@ export function Presenter({ sessionId, number, title, published }: { sessionId: 
     async function load() {
       try {
         const r = await fetch(`/api/live/${sessionId}/board?slide=${slide}`, { cache: "no-store" });
+        if (!r.ok && alive) setSyncError(`Ergebnisse nicht abrufbar (${r.status})`);
         if (r.ok && alive) setBoard(await r.json());
       } catch { /* nächster Versuch */ }
     }
@@ -115,6 +126,9 @@ export function Presenter({ sessionId, number, title, published }: { sessionId: 
   }
 
   const active = board?.active ?? null;
+  const problem = stopped ? null
+    : syncError ? `Tablets bekommen die Folie nicht: ${syncError}`
+    : board && !board.published ? "Sitzung ist nicht veröffentlicht: Die Tablets sehen nichts." : null;
   const count = board?.result ? (board.result.kind === "wall" ? board.result.entries.length : board.result.respondents) : 0;
   const countLabel = board?.result?.kind === "wall" ? (count === 1 ? "Zettel" : "Zettel") : count === 1 ? "Antwort" : "Antworten";
 
@@ -133,11 +147,14 @@ export function Presenter({ sessionId, number, title, published }: { sessionId: 
         />
       )}
 
+      {problem && <div className="presenter-problem" role="alert">{problem}</div>}
+
       {active && !stopped && (
         <button type="button" className="presenter-badge" onClick={() => { setShowResults((v) => !v); focusDeck(); }}>
           <span className="dot" aria-hidden="true" />
           <span><b>{active.mode === "reveal" ? "Auflösung" : "Jetzt mitmachen"}</b> · ag.provoid.de › Sitzung {number}</span>
           <span className="n">{count} {countLabel}</span>
+          {board && <span className="faint">{board.online} {board.online === 1 ? "Gerät" : "Geräte"} verbunden</span>}
         </button>
       )}
 
@@ -155,6 +172,7 @@ export function Presenter({ sessionId, number, title, published }: { sessionId: 
         <span className="chip">{slide ?? "?"} / {total || "?"}</span>
         {!published && <span className="chip mine">nicht veröffentlicht</span>}
         {stopped ? <span className="chip">live beendet</span> : <span className="chip live">live</span>}
+        {board && <span className={`chip${board.online ? " live" : ""}`}>{board.online} {board.online === 1 ? "Gerät" : "Geräte"} verbunden</span>}
         <span style={{ flex: 1 }} />
         <button type="button" className="btn ghost small" onClick={() => { setShowResults((v) => !v); focusDeck(); }} disabled={!active}>Ergebnisse (E)</button>
         <button type="button" className="btn ghost small" onClick={toggleFullscreen}>Vollbild (F)</button>

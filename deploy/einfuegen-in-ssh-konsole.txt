@@ -358,6 +358,15 @@ create table if not exists live_responses (
   unique (item_id, user_id, key)
 );
 create index if not exists live_responses_item on live_responses (item_id);
+
+-- Welche Geräte gerade verbunden sind (für die Anzeige in der Präsentation)
+create table if not exists live_presence (
+  user_id    uuid not null references users(id) on delete cascade,
+  group_id   uuid not null references groups(id) on delete cascade,
+  seen_at    timestamptz not null default now(),
+  primary key (user_id)
+);
+create index if not exists live_presence_group on live_presence (group_id, seen_at);
 SQL
 
 echo "==> 3/6 Passwort und Zertifikat"

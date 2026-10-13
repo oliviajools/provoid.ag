@@ -1,5 +1,5 @@
 import { activeFor, liveSlide, loadItems, myAnswers, results } from "@/lib/live";
-import { guard, json } from "@/lib/live-api";
+import { guard, json, touchPresence } from "@/lib/live-api";
 
 export const dynamic = "force-dynamic";
 
@@ -8,6 +8,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ sessionI
   const { sessionId } = await params;
   const g = await guard(req, sessionId);
   if ("error" in g) return g.error;
+  await touchPresence(g.user);
   const slide = await liveSlide(sessionId);
   if (slide === null) return json({ live: false });
   const items = await loadItems(sessionId);
