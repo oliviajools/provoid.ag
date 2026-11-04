@@ -94,51 +94,102 @@ export async function myAnswers(itemId: string, userId: string) {
 /** Vorlagen für fertige Foliensätze. */
 type Template = Omit<LiveItem, "id" | "session_id" | "position" | "closed">;
 export const TEMPLATES: Record<string, { label: string; items: Template[] }> = {
+  // Foliennummern passen zum Foliensatz "AG KI · Session 1: Mensch vs. Maschine" mit 18 Folien (Stand 04.11.2026).
   "mensch-vs-maschine": {
     label: "Sitzung 1: Mensch vs. Maschine",
     items: [
       {
-        title: "Ratespiel: KI oder keine KI?", kind: "grid", slide: 7, until_slide: null, reveal_slide: 8,
+        title: "Ratespiel: KI oder keine KI?", kind: "grid", slide: 8, until_slide: null, reveal_slide: 9,
         rows: ["Taschenrechner", "Face ID", "TikTok-Feed", "Wecker", "Autokorrektur", "Stauprognose in Google Maps", "Ampel mit Zeitschaltung", "Snapchat-Filter"],
         options: ["KI", "keine KI"], solution: [1, 0, 0, 1, 0, 0, 1, 0], private: false, homework: false,
       },
       {
-        title: "Beobachtungsauftrag: Die letzte Erfindung der Menschheit?", kind: "text", slide: 11, until_slide: 12, reveal_slide: null,
+        title: "Beobachtungsauftrag: Die letzte Erfindung der Menschheit?", kind: "text", slide: 12, until_slide: 13, reveal_slide: null,
         rows: ["Was hat euch überrascht?", "Was findet ihr beunruhigend?", "Was ist der Unterschied zwischen der KI von heute und einer „Superintelligenz“?"],
         options: [], solution: null, private: false, homework: false,
       },
       {
-        title: "Brainstorming: Was kann nur der Mensch?", kind: "wall", slide: 13, until_slide: null, reveal_slide: null,
+        title: "Brainstorming: Was kann nur der Mensch?", kind: "wall", slide: 14, until_slide: null, reveal_slide: null,
         rows: ["Mensch: Was können wir, das eine KI nicht kann?", "KI: Was kann eine KI, das wir nicht können?"],
         options: [], solution: null, private: false, homework: false,
       },
       {
-        title: "Was seht ihr?", kind: "wall", slide: 14, until_slide: null, reveal_slide: null,
-        rows: ["Was seht ihr?"], options: [], solution: null, private: false, homework: false,
-      },
-      {
-        title: "Beobachtungsauftrag: Anil Seth", kind: "text", slide: 15, until_slide: null, reveal_slide: null,
-        rows: ["Was ist der Unterschied zwischen Intelligenz und Bewusstsein?", "Warum halten wir KI für bewusst?", "Welche Rolle spielt unser Körper?"],
-        options: [], solution: null, private: false, homework: false,
-      },
-      {
-        title: "Abstimmung: Bewusstsein", kind: "grid", slide: 16, until_slide: null, reveal_slide: null,
-        rows: ["Glaubt ihr Seth, dass KI nie ein Bewusstsein haben wird?"],
-        options: ["Ja", "Nein", "Weiß nicht"], solution: null, private: false, homework: false,
-      },
-      {
-        title: "Job-Ampel: Wie stark verändert KI diesen Beruf?", kind: "grid", slide: 18, until_slide: null, reveal_slide: null,
-        rows: ["Übersetzer:in", "Pflegekraft", "Programmierer:in", "Influencer:in", "Elektriker:in", "Steuerberater:in", "Lehrer:in", "Grafikdesigner:in"],
-        options: ["grün: kaum", "gelb: teilweise", "rot: stark"], solution: null, private: false, homework: false,
-      },
-      {
-        title: "Hausaufgabe: Schule in drei Jahren", kind: "text", slide: 20, until_slide: null, reveal_slide: null,
+        title: "Hausaufgabe: Schule in drei Jahren", kind: "text", slide: 17, until_slide: null, reveal_slide: null,
         rows: [
           "Unterricht: Wofür sollte KI im Unterricht genutzt werden, und wofür bewusst nicht?",
           "Hausaufgaben und Prüfungen: Wie sehen sie aus, wenn alle eine KI in der Tasche haben?",
           "Menschen: Was machen Lehrkräfte, was macht ihr? Und was sollte nie eine KI übernehmen?",
         ],
         options: [], solution: null, private: true, homework: true,
+      },
+    ],
+  },
+  // Foliennummern passen zum Foliensatz "AG KI · Session 2: Wer entscheidet, was du siehst?" mit 18 Folien (Stand 04.11.2026).
+  "wer-entscheidet": {
+    label: "Sitzung 2: Wer entscheidet, was du siehst?",
+    items: [
+      {
+        title: "KI-Radar: Was habt ihr diese Woche über KI mitbekommen?", kind: "wall", slide: 4, until_slide: null, reveal_slide: null,
+        rows: ["Eine Meldung, ein Video oder etwas aus eurem Alltag"],
+        options: [], solution: null, private: false, homework: false,
+      },
+      {
+        title: "Hausaufgabe: Schule in drei Jahren", kind: "wall", slide: 5, until_slide: null, reveal_slide: null,
+        rows: ["Dafür soll KI in der Schule da sein", "Das soll KI in der Schule nie übernehmen"],
+        options: [], solution: null, private: false, homework: false,
+      },
+      {
+        title: "Mission: Wer entscheidet, was du auf TikTok siehst?", kind: "grid", slide: 6, until_slide: null, reveal_slide: null,
+        rows: ["Wer entscheidet, was du auf TikTok siehst?"],
+        options: ["vor allem ich", "vor allem der Algorithmus", "beide gleich"], solution: null, private: false, homework: false,
+      },
+      {
+        title: "Was seht ihr?", kind: "wall", slide: 7, until_slide: null, reveal_slide: null,
+        rows: ["Was seht ihr?"], options: [], solution: null, private: false, homework: false,
+      },
+      {
+        title: "Beobachtungsauftrag: Anil Seth", kind: "text", slide: 8, until_slide: null, reveal_slide: null,
+        rows: ["Was ist der Unterschied zwischen Intelligenz und Bewusstsein?", "Warum halten wir KI für bewusst?", "Welche Rolle spielt unser Körper?"],
+        options: [], solution: null, private: false, homework: false,
+      },
+      {
+        title: "Abstimmung: Bewusstsein", kind: "grid", slide: 9, until_slide: null, reveal_slide: null,
+        rows: ["Glaubt ihr Seth, dass KI nie ein Bewusstsein haben wird?"],
+        options: ["Ja, nie", "Bin unsicher", "Nein, irgendwann schon"], solution: null, private: false, homework: false,
+      },
+      {
+        title: "Der Vergleich: Wer ist hier im Vorteil?", kind: "grid", slide: 10, until_slide: null, reveal_slide: null,
+        rows: ["Lernen", "Energie", "Wissen", "Tempo", "Fehler", "Gefühle", "Verantwortung"],
+        options: ["Mensch", "KI", "unentschieden"], solution: null, private: false, homework: false,
+      },
+      {
+        title: "Sortiernetz: Eure Vorhersage", kind: "grid", slide: 12, until_slide: null, reveal_slide: null,
+        rows: ["Niemand hat den Überblick. Sind die sechs Zahlen am Ende trotzdem sortiert?"],
+        options: ["Ja, immer", "Nur manchmal", "Nein"], solution: null, private: false, homework: false,
+      },
+      {
+        title: "Katze oder Hund: Hält eure Regel?", kind: "grid", slide: 13, until_slide: null, reveal_slide: null,
+        rows: ["Eure Regel schafft 12 von 12 Übungstieren. Wie viele der 6 neuen Tiere schafft sie?"],
+        options: ["alle 6", "4 oder 5", "3 oder weniger"], solution: null, private: false, homework: false,
+      },
+      {
+        title: "Feed-Simulator: Wann kippt der Feed?", kind: "grid", slide: 14, until_slide: null, reveal_slide: null,
+        rows: ["Wie viele Videos dauert es, bis der Feed fast nur noch ein Thema zeigt?"],
+        options: ["unter 5", "5 bis 10", "11 bis 20", "über 20"], solution: null, private: false, homework: false,
+      },
+      {
+        title: "Writing: Wer ist verantwortlich, der Algorithmus oder du?", kind: "text", slide: 15, until_slide: null, reveal_slide: null,
+        rows: [
+          "Wann entscheidet dein Feed für dich, und wann entscheidest du selbst? Nenne ein Beispiel aus deinem eigenen Feed.",
+          "Was spricht für die andere Seite? Schreib das stärkste Gegenargument auf.",
+          "Wenn du die Regeln deines Feeds selbst schreiben dürftest: Welche drei wären es, und was soll er nie tun?",
+        ],
+        options: [], solution: null, private: true, homework: false,
+      },
+      {
+        title: "Outro: Und jetzt? Wer entscheidet, was du auf TikTok siehst?", kind: "grid", slide: 17, until_slide: null, reveal_slide: null,
+        rows: ["Wer entscheidet, was du auf TikTok siehst?"],
+        options: ["vor allem ich", "vor allem der Algorithmus", "beide gleich"], solution: null, private: false, homework: false,
       },
     ],
   },
