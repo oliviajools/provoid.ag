@@ -60,6 +60,7 @@ export function LivePanel({ sessionId }: { sessionId: string }) {
         {a && a.mode === "reveal" && !a.result && <p className="muted">Schau nach vorne, gleich gibt es die Auflösung.</p>}
         {a && a.mode === "open" && a.kind === "grid" && <GridAnswer key={a.id} sessionId={sessionId} a={a} />}
         {a && a.mode === "open" && a.kind === "wall" && <WallAnswer key={a.id} sessionId={sessionId} a={a} />}
+        {a && a.mode === "open" && a.kind === "cloud" && <CloudAnswer key={a.id} sessionId={sessionId} a={a} />}
         {a && a.mode === "open" && a.homework && <p className="muted">Die Hausaufgabe findest du weiter unten auf dieser Seite. Ein paar Sätze reichen, ohne KI.</p>}
         {a && a.mode === "open" && a.kind === "text" && !a.homework && <TextAnswer key={a.id} sessionId={sessionId} a={a} />}
       </div>
@@ -177,6 +178,48 @@ export function TextQuestions({ sessionId, itemId, rows, initial, isPrivate }: {
         <button type="button" className="btn small" onClick={() => rows.forEach((_, i) => save(i))}>Speichern</button>
         <span className="faint" role="status">{status ?? (isPrivate ? "Nur dein Coach sieht deine Antworten." : "Die Antworten erscheinen ohne Namen an der Tafel.")}</span>
       </div>
+    </div>
+  );
+}
+
+const CLOUD_MAX = 3;
+
+function CloudAnswer({ sessionId, a }: { sessionId: string; a: Active }) {
+  const [words, setWords] = useState(a.mine);
+  const [draft, setDraft] = useState("");
+  const [err, setErr] = useState<string | null>(null);
+  async function add() {
+    const text = draft.trim();
+    if (!text) return;
+    setErr(null); setDraft("");
+    try {
+      const d = await send(sessionId, { itemId: a.id, key: "0", value: text });
+      setWords((w) => [...w, { key: d.key ?? "0:x", value: text }]);
+    } catch (e) { setErr((e as Error).message); setDraft(text); }
+  }
+  async function remove(key: string) {
+    try { await send(sessionId, { itemId: a.id, remove: key }); setWords((w) => w.filter((x) => x.key !== key)); }
+    catch (e) { setErr((e as Error).message); }
+  }
+  const full = words.length >= CLOUD_MAX;
+  return (
+    <div className="stack" style={{ gap: 16 }}>
+      {err && <div className="alert error" role="alert">{err}</div>}
+      {a.rows[0] && <p style={{ fontSize: 18, fontWeight: 700, margin: 0 }}>{a.rows[0]}</p>}
+      {!full && (
+        <form className="lv-add" onSubmit={(e) => { e.preventDefault(); add(); }}>
+          <input type="text" maxLength={40} value={draft} placeholder="Ein Begriff, höchstens drei Wörter" onChange={(e) => setDraft(e.target.value)} aria-label={a.rows[0] ?? "Begriff"} />
+          <button className="btn small" type="submit">Abschicken</button>
+        </form>
+      )}
+      <div className="lr-notes">
+        {words.map((w) => (
+          <div className="lr-note mine" key={w.key}>{w.value}
+            <button type="button" className="lv-x" onClick={() => remove(w.key)} aria-label="Begriff entfernen">×</button>
+          </div>
+        ))}
+      </div>
+      <p className="faint">{full ? "Du hast alle drei Begriffe abgegeben." : `Bis zu ${CLOUD_MAX} Begriffe.`} Sie erscheinen ohne Namen in der Wortwolke vorne.</p>
     </div>
   );
 }

@@ -134,7 +134,7 @@ export default async function CoachSession({ params }: { params: Promise<{ id: s
                         <summary>Antworten mit Namen ansehen</summary>
                         <div className="table-wrap" style={{ marginTop: 12 }}>
                           <table>
-                            <thead><tr><th>Name</th><th>{it.kind === "grid" ? "Aussage" : it.kind === "wall" ? "Spalte" : "Frage"}</th><th>Antwort</th></tr></thead>
+                            <thead><tr><th>Name</th><th>{it.kind === "grid" ? "Aussage" : it.kind === "wall" ? "Spalte" : it.kind === "cloud" ? "Nr." : "Frage"}</th><th>Antwort</th></tr></thead>
                             <tbody>
                               {mine.map((a, k) => {
                                 const ri = Number(a.key.split(":")[0]);

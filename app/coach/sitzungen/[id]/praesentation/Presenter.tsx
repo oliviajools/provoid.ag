@@ -131,7 +131,7 @@ export function Presenter({ sessionId, number, title, published }: { sessionId: 
     : board && !board.published ? "Sitzung ist nicht veröffentlicht: Die Tablets sehen nichts."
     : board && board.items === 0 ? "Diese Sitzung hat noch keine Interaktionen. Schließen, unter „Vorlage einfügen“ die Vorlage wählen, dann neu starten." : null;
   const count = board?.result ? (board.result.kind === "wall" ? board.result.entries.length : board.result.respondents) : 0;
-  const countLabel = board?.result?.kind === "wall" ? (count === 1 ? "Zettel" : "Zettel") : count === 1 ? "Antwort" : "Antworten";
+  const countLabel = board?.result?.kind === "wall" ? "Zettel" : count === 1 ? "Antwort" : "Antworten";
 
   return (
     <div className="presenter" onMouseMove={wake}>

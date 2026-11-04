@@ -606,3 +606,10 @@ a.srow:hover .stitle { color: var(--accent); }
 .live-card.flash { animation: liveflash 1.2s ease-out; }
 @keyframes liveflash { 0% { box-shadow: 0 0 0 6px var(--accent); } 100% { box-shadow: 0 0 0 1px var(--accent) inset; } }
 .presenter-problem { position: absolute; top: 18px; left: 18px; z-index: 6; background: #3A1420; border: 1px solid var(--danger); color: var(--danger); padding: 10px 14px; font-size: 15px; max-width: 46vw; }
+
+/* Wortwolke */
+.lr-cloud-wrap { display: flex; flex-direction: column; gap: 14px; }
+.lr-cloud { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 6px 22px; padding: 18px 8px; line-height: 1.1; }
+.lr-word { font-family: var(--font-display), sans-serif; color: #F4F1FF; overflow-wrap: anywhere; }
+.lr-word.c0 { color: #F4F1FF; } .lr-word.c1 { color: #A994FF; } .lr-word.c2 { color: #D9E1FF; } .lr-word.c3 { color: #5EE0A0; }
+.live-results.big .lr-cloud { min-height: 50vh; gap: 10px 34px; }

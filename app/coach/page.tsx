@@ -49,6 +49,7 @@ export default async function Coach() {
               <Link href="/coach/anmeldungen" className="btn ghost">Anmeldungen</Link>
               <Link href="/themen" className="btn ghost">Themenwünsche</Link>
               <Link href="/coach/kompass" className="btn ghost">Kompass-Auswertung</Link>
+              <Link href="/coach/evaluation" className="btn ghost">Evaluation</Link>
               <Link href="/ideen" className="btn ghost">Ideen-Wand</Link>
               <Link href="/start" className="btn ghost">Schüleransicht ansehen</Link>
             </div>

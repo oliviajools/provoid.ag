@@ -1,11 +1,12 @@
 import "server-only";
 import { sql } from "./db";
 
-export type LiveKind = "grid" | "wall" | "text";
+export type LiveKind = "grid" | "wall" | "text" | "cloud";
 export const KIND_LABEL: Record<LiveKind, string> = {
   grid: "Abstimmung",
   wall: "Pinnwand",
   text: "Fragen",
+  cloud: "Wortwolke",
 };
 
 export type LiveItem = {
@@ -18,6 +19,9 @@ export type LiveItem = {
 /** Live gilt höchstens drei Stunden nach der letzten Bewegung in der Präsentation. */
 export const LIVE_HOURS = 3;
 export const MAX_WALL_PER_USER = 15;
+/** Wortwolke: so viele Begriffe darf jede Person abgeben, je höchstens CLOUD_MAX_LEN Zeichen. */
+export const MAX_CLOUD_PER_USER = 3;
+export const CLOUD_MAX_LEN = 40;
 
 export async function loadItems(sessionId: string) {
   return sql<LiveItem[]>`
@@ -61,7 +65,8 @@ export async function canAnswer(item: LiveItem) {
 export type GridResult = { kind: "grid"; respondents: number; counts: number[][] };
 export type WallResult = { kind: "wall"; entries: { col: number; text: string }[] };
 export type TextResult = { kind: "text"; respondents: number; answers: string[][]; hidden: boolean };
-export type LiveResult = GridResult | WallResult | TextResult;
+export type CloudResult = { kind: "cloud"; respondents: number; words: { text: string; n: number }[] };
+export type LiveResult = GridResult | WallResult | TextResult | CloudResult;
 
 /** Ergebnisse ohne Namen (für Tafel und Auflösung). */
 export async function results(item: LiveItem, forBoard = true): Promise<LiveResult> {
@@ -79,6 +84,22 @@ export async function results(item: LiveItem, forBoard = true): Promise<LiveResu
   if (item.kind === "wall") {
     return { kind: "wall", entries: rows.map((r) => ({ col: Number(r.key.split(":")[0]) || 0, text: r.value })) };
   }
+  if (item.kind === "cloud") {
+    // Gleiche Begriffe zusammenfassen, Groß- und Kleinschreibung egal; angezeigt wird die häufigste Schreibweise.
+    const groups = new Map<string, { n: number; forms: Map<string, number> }>();
+    for (const r of rows) {
+      const text = r.value.trim().replace(/\s+/g, " ").replace(/[.!?,;:]+$/, "");
+      if (!text) continue;
+      const k = text.toLocaleLowerCase("de");
+      const g = groups.get(k) ?? { n: 0, forms: new Map<string, number>() };
+      g.n++; g.forms.set(text, (g.forms.get(text) ?? 0) + 1); groups.set(k, g);
+    }
+    const words = [...groups.values()]
+      .map((g) => ({ text: [...g.forms.entries()].sort((a, b) => b[1] - a[1])[0][0], n: g.n }))
+      .sort((a, b) => b.n - a.n || a.text.localeCompare(b.text, "de"))
+      .slice(0, 80);
+    return { kind: "cloud", respondents, words };
+  }
   const hidden = item.private && forBoard;
   const answers = item.rows.map(() => [] as string[]);
   if (!hidden) for (const r of rows) { const i = Number(r.key); if (answers[i] && r.value.trim()) answers[i].push(r.value); }
@@ -94,7 +115,7 @@ export async function myAnswers(itemId: string, userId: string) {
 /** Vorlagen für fertige Foliensätze. */
 type Template = Omit<LiveItem, "id" | "session_id" | "position" | "closed">;
 export const TEMPLATES: Record<string, { label: string; items: Template[] }> = {
-  // Foliennummern passen zum Foliensatz "AG KI · Session 1: Mensch vs. Maschine" mit 18 Folien (Stand 04.11.2026).
+  // Foliennummern passen zum Foliensatz "AG KI · Session 1: Mensch vs. Maschine" mit 17 Folien (Stand 04.11.2026, mit Gastfolie Ana Goldbeck auf Folie 14).
   "mensch-vs-maschine": {
     label: "Sitzung 1: Mensch vs. Maschine",
     items: [
@@ -104,17 +125,17 @@ export const TEMPLATES: Record<string, { label: string; items: Template[] }> = {
         options: ["KI", "keine KI"], solution: [1, 0, 0, 1, 0, 0, 1, 0], private: false, homework: false,
       },
       {
-        title: "Beobachtungsauftrag: Die letzte Erfindung der Menschheit?", kind: "text", slide: 12, until_slide: 13, reveal_slide: null,
+        title: "Beobachtungsauftrag: Die letzte Erfindung der Menschheit?", kind: "text", slide: 11, until_slide: null, reveal_slide: null,
         rows: ["Was hat euch überrascht?", "Was findet ihr beunruhigend?", "Was ist der Unterschied zwischen der KI von heute und einer „Superintelligenz“?"],
         options: [], solution: null, private: false, homework: false,
       },
       {
-        title: "Brainstorming: Was kann nur der Mensch?", kind: "wall", slide: 14, until_slide: null, reveal_slide: null,
+        title: "Brainstorming: Was kann nur der Mensch?", kind: "wall", slide: 12, until_slide: null, reveal_slide: null,
         rows: ["Mensch: Was können wir, das eine KI nicht kann?", "KI: Was kann eine KI, das wir nicht können?"],
         options: [], solution: null, private: false, homework: false,
       },
       {
-        title: "Hausaufgabe: Schule in drei Jahren", kind: "text", slide: 17, until_slide: null, reveal_slide: null,
+        title: "Hausaufgabe: Schule in drei Jahren", kind: "text", slide: 16, until_slide: null, reveal_slide: null,
         rows: [
           "Unterricht: Wofür sollte KI im Unterricht genutzt werden, und wofür bewusst nicht?",
           "Hausaufgaben und Prüfungen: Wie sehen sie aus, wenn alle eine KI in der Tasche haben?",
@@ -124,7 +145,7 @@ export const TEMPLATES: Record<string, { label: string; items: Template[] }> = {
       },
     ],
   },
-  // Foliennummern passen zum Foliensatz "AG KI · Session 2: Wer entscheidet, was du siehst?" mit 18 Folien (Stand 04.11.2026).
+  // Foliennummern passen zum Foliensatz "AG KI · Session 2: Wer entscheidet, was du siehst?" mit 19 Folien (Stand 04.11.2026, mit Folie 15 Suchtpotenzial).
   "wer-entscheidet": {
     label: "Sitzung 2: Wer entscheidet, was du siehst?",
     items: [
@@ -178,16 +199,12 @@ export const TEMPLATES: Record<string, { label: string; items: Template[] }> = {
         options: ["unter 5", "5 bis 10", "11 bis 20", "über 20"], solution: null, private: false, homework: false,
       },
       {
-        title: "Writing: Wer ist verantwortlich, der Algorithmus oder du?", kind: "text", slide: 15, until_slide: null, reveal_slide: null,
-        rows: [
-          "Wann entscheidet dein Feed für dich, und wann entscheidest du selbst? Nenne ein Beispiel aus deinem eigenen Feed.",
-          "Was spricht für die andere Seite? Schreib das stärkste Gegenargument auf.",
-          "Wenn du die Regeln deines Feeds selbst schreiben dürftest: Welche drei wären es, und was soll er nie tun?",
-        ],
-        options: [], solution: null, private: true, homework: false,
+        title: "Writing: Wer ist verantwortlich?", kind: "cloud", slide: 16, until_slide: null, reveal_slide: null,
+        rows: ["Wer ist verantwortlich für das, was du in deinem Feed siehst?"],
+        options: [], solution: null, private: false, homework: false,
       },
       {
-        title: "Outro: Und jetzt? Wer entscheidet, was du auf TikTok siehst?", kind: "grid", slide: 17, until_slide: null, reveal_slide: null,
+        title: "Outro: Und jetzt? Wer entscheidet, was du auf TikTok siehst?", kind: "grid", slide: 18, until_slide: null, reveal_slide: null,
         rows: ["Wer entscheidet, was du auf TikTok siehst?"],
         options: ["vor allem ich", "vor allem der Algorithmus", "beide gleich"], solution: null, private: false, homework: false,
       },

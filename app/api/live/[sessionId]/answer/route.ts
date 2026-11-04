@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { sql } from "@/lib/db";
-import { MAX_WALL_PER_USER, canAnswer, loadItem } from "@/lib/live";
+import { CLOUD_MAX_LEN, MAX_CLOUD_PER_USER, MAX_WALL_PER_USER, canAnswer, loadItem } from "@/lib/live";
 import { guard, json } from "@/lib/live-api";
 
 export const dynamic = "force-dynamic";
@@ -25,7 +25,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ session
   const uid = g.user.id;
 
   if (p.data.remove) {
-    if (item.kind !== "wall") return json({ error: "Ungültige Anfrage." }, 400);
+    if (item.kind !== "wall" && item.kind !== "cloud") return json({ error: "Ungültige Anfrage." }, 400);
     await sql`delete from live_responses where item_id = ${item.id} and user_id = ${uid} and key = ${p.data.remove}`;
     return json({ ok: true });
   }
@@ -49,6 +49,15 @@ export async function POST(req: Request, { params }: { params: Promise<{ session
     const [{ n }] = await sql<{ n: number }[]>`select count(*)::int as n from live_responses where item_id = ${item.id} and user_id = ${uid}`;
     if (n >= MAX_WALL_PER_USER) return json({ error: `Höchstens ${MAX_WALL_PER_USER} Zettel pro Person.` }, 409);
     const key = `${col}:${crypto.randomUUID().slice(0, 8)}`;
+    await sql`insert into live_responses (item_id, user_id, key, value) values (${item.id}, ${uid}, ${key}, ${value})`;
+    return json({ ok: true, key });
+  }
+
+  if (item.kind === "cloud") {
+    if (value.length < 1 || value.length > CLOUD_MAX_LEN) return json({ error: `Bitte 1 bis ${CLOUD_MAX_LEN} Zeichen.` }, 400);
+    const [{ n }] = await sql<{ n: number }[]>`select count(*)::int as n from live_responses where item_id = ${item.id} and user_id = ${uid}`;
+    if (n >= MAX_CLOUD_PER_USER) return json({ error: `Höchstens ${MAX_CLOUD_PER_USER} Begriffe pro Person.` }, 409);
+    const key = `0:${crypto.randomUUID().slice(0, 8)}`;
     await sql`insert into live_responses (item_id, user_id, key, value) values (${item.id}, ${uid}, ${key}, ${value})`;
     return json({ ok: true, key });
   }

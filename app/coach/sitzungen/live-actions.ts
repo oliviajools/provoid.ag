@@ -19,7 +19,7 @@ const slideNum = z.union([z.literal(""), z.coerce.number().int().min(1).max(500)
 const itemSchema = z.object({
   session_id: z.string().uuid(),
   title: z.string().trim().min(2, "Bitte einen Titel angeben.").max(160),
-  kind: z.enum(["grid", "wall", "text"]),
+  kind: z.enum(["grid", "wall", "text", "cloud"]),
   slide: slideNum, until_slide: slideNum, reveal_slide: slideNum,
 });
 
@@ -35,7 +35,7 @@ function parseItem(form: FormData) {
   const options = d.kind === "grid" ? lines(form.get("options")).slice(0, 8).map((l) => l.slice(0, 80)) : [];
   if (d.kind === "grid" && rows.length === 0) return { error: "Bitte mindestens eine Frage oder Aussage angeben." } as const;
   if (d.kind === "grid" && options.length < 2) return { error: "Bitte mindestens zwei Antwortmöglichkeiten angeben." } as const;
-  if (d.kind === "text" && rows.length === 0) return { error: "Bitte mindestens eine Frage angeben." } as const;
+  if ((d.kind === "text" || d.kind === "cloud") && rows.length === 0) return { error: "Bitte mindestens eine Frage angeben." } as const;
   let solution: (number | null)[] | null = null;
   if (d.kind === "grid") {
     const sol = String(form.get("solution") ?? "").split(/\r?\n/).map((l) => l.trim());
@@ -50,7 +50,7 @@ function parseItem(form: FormData) {
   if (d.until_slide !== null && d.slide !== null && d.until_slide < d.slide) return { error: "„Offen bis Folie“ muss nach der Startfolie liegen." } as const;
   return {
     data: {
-      ...d, rows: d.kind === "wall" && rows.length === 0 ? ["Eure Ideen"] : rows, options, solution,
+      ...d, rows: d.kind === "wall" && rows.length === 0 ? ["Eure Ideen"] : d.kind === "cloud" ? rows.slice(0, 1) : rows, options, solution,
       private: form.get("private") === "on", homework: form.get("homework") === "on",
     },
   } as const;

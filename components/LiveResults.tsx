@@ -1,11 +1,12 @@
 export type BoardActive = {
-  id: string; title: string; kind: "grid" | "wall" | "text"; rows: string[]; options: string[];
+  id: string; title: string; kind: "grid" | "wall" | "text" | "cloud"; rows: string[]; options: string[];
   solution: (number | null)[] | null; mode: "open" | "reveal"; private: boolean; homework?: boolean;
 };
 export type BoardResult =
   | { kind: "grid"; respondents: number; counts: number[][] }
   | { kind: "wall"; entries: { col: number; text: string }[] }
-  | { kind: "text"; respondents: number; answers: string[][]; hidden: boolean };
+  | { kind: "text"; respondents: number; answers: string[][]; hidden: boolean }
+  | { kind: "cloud"; respondents: number; words: { text: string; n: number }[] };
 
 function tone(o: string, i: number) {
   const t = o.toLowerCase();
@@ -85,6 +86,8 @@ export function LiveResults({ active, result, big = false, mine }: {
         </div>
       )}
 
+      {result.kind === "cloud" && <Cloud question={active.rows[0]} words={result.words} respondents={result.respondents} big={big} />}
+
       {result.kind === "text" && (
         result.hidden
           ? <p className="muted">{result.respondents} {result.respondents === 1 ? "Person hat" : "Personen haben"} geantwortet. Die Antworten siehst nur du in der Sitzungsübersicht.</p>
@@ -100,6 +103,31 @@ export function LiveResults({ active, result, big = false, mine }: {
               ))}
             </div>
       )}
+    </div>
+  );
+}
+
+/** Wortwolke: häufige Begriffe groß, seltene klein. Reihenfolge gemischt, damit die größten nicht alle vorne stehen. */
+function Cloud({ question, words, respondents, big }: { question?: string; words: { text: string; n: number }[]; respondents: number; big: boolean }) {
+  const max = Math.max(1, ...words.map((w) => w.n));
+  const order = words.map((w, i) => ({ w, i })).sort((a, b) => ((a.i * 7919) % 13) - ((b.i * 7919) % 13));
+  return (
+    <div className="lr-cloud-wrap">
+      {question && <h3>{question}</h3>}
+      {words.length === 0
+        ? <p className="faint">Noch keine Begriffe.</p>
+        : <div className="lr-cloud" role="list">
+            {order.map(({ w, i }) => {
+              const t = max === 1 ? 0.5 : (w.n - 1) / (max - 1);
+              const size = big ? 18 + t * 62 : 14 + t * 26;
+              return (
+                <span role="listitem" key={i} className={`lr-word c${i % 4}`} style={{ fontSize: size, fontWeight: t > 0.5 ? 800 : 600 }} title={`${w.n}×`}>
+                  {w.text}
+                </span>
+              );
+            })}
+          </div>}
+      <p className="faint">{respondents} {respondents === 1 ? "Person hat" : "Personen haben"} geantwortet.</p>
     </div>
   );
 }

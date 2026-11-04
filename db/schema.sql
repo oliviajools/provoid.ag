@@ -284,7 +284,7 @@ create table if not exists live_items (
   session_id    uuid not null references ag_sessions(id) on delete cascade,
   position      int not null default 0,
   title         text not null,
-  kind          text not null check (kind in ('grid', 'wall', 'text')),
+  kind          text not null check (kind in ('grid', 'wall', 'text', 'cloud')),
   slide         int,            -- Folie, auf der die Interaktion startet
   until_slide   int,            -- bleibt offen bis einschließlich dieser Folie
   reveal_slide  int,            -- auf dieser Folie sehen alle die Auflösung
@@ -317,3 +317,14 @@ create table if not exists live_presence (
   primary key (user_id)
 );
 create index if not exists live_presence_group on live_presence (group_id, seen_at);
+
+-- Anonyme Evaluation: keine Benutzer-ID, keine Uhrzeit. Der Code verbindet Antworten über das Jahr.
+create table if not exists eval_responses (
+  id           uuid primary key default gen_random_uuid(),
+  group_id     uuid not null references groups(id) on delete cascade,
+  eval_id      text not null,              -- "kompass", "1", "2", ...
+  code         text not null,              -- selbst gebildet, z. B. SA07KI
+  answers      jsonb not null,
+  submitted_on date not null default current_date,
+  unique (group_id, eval_id, code)
+);

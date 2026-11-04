@@ -11,14 +11,14 @@ function Msg({ s }: { s: LiveActState }) {
 }
 
 export type ItemDraft = {
-  id?: string; title: string; kind: "grid" | "wall" | "text";
+  id?: string; title: string; kind: "grid" | "wall" | "text" | "cloud";
   slide: number | null; until_slide: number | null; reveal_slide: number | null;
   rows: string[]; options: string[]; solution: (number | null)[] | null; private: boolean; homework: boolean;
 };
 
 const EMPTY: ItemDraft = { title: "", kind: "grid", slide: null, until_slide: null, reveal_slide: null, rows: [], options: [], solution: null, private: false, homework: false };
 
-const ROWS_LABEL = { grid: "Fragen oder Aussagen (eine pro Zeile)", wall: "Spalten der Pinnwand (eine pro Zeile, leer = eine Spalte)", text: "Fragen (eine pro Zeile)" };
+const ROWS_LABEL = { grid: "Fragen oder Aussagen (eine pro Zeile)", wall: "Spalten der Pinnwand (eine pro Zeile, leer = eine Spalte)", text: "Fragen (eine pro Zeile)", cloud: "Frage für die Wortwolke (eine Zeile)" };
 
 export function LiveItemForm({ sessionId, item }: { sessionId: string; item?: ItemDraft }) {
   const it = item ?? EMPTY;
@@ -37,6 +37,7 @@ export function LiveItemForm({ sessionId, item }: { sessionId: string; item?: It
             <option value="grid">Abstimmung (auch mehrere Aussagen)</option>
             <option value="wall">Pinnwand (freie Zettel)</option>
             <option value="text">Fragen mit Textantwort</option>
+            <option value="cloud">Wortwolke (bis zu 3 Begriffe pro Person)</option>
           </select></div>
       </div>
       <div className="grid-form" style={{ gridTemplateColumns: "1fr 1fr 1fr" }}>
