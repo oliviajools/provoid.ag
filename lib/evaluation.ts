@@ -73,6 +73,15 @@ export const EVALS: Record<string, EvalDef> = {
     ],
     parts: ["News", "Mission", "Kern", "Writing", "Outro"],
   },
+  "3": {
+    id: "3", title: "Evaluation Session 3", label: "Session 3: Wie lernt ein Sprachmodell?", scenarios: false,
+    topic: "wie aus einem Textfortsetzer ein freundlicher Chatbot wird",
+    checks: [
+      { q: "Was macht ein Sprachmodell nach dem Vortraining im Kern?", opts: ["Es sucht im Internet.", "Es sagt das wahrscheinlichste nächste Wort vorher.", "Es versteht die Frage wie ein Mensch.", "Es schlägt in einer Datenbank nach."], correct: 1 },
+      { q: "Warum beginnt ChatGPT Antworten oft mit „Gute Frage!“?", opts: ["Es freut sich wirklich über die Frage.", "Ein Programmierer hat jede Antwort einzeln geschrieben.", "Solche Antworten wurden beim Training von Menschen belohnt.", "Es hat den Satz bei Wikipedia gelesen."], correct: 2 },
+    ],
+    parts: ["News", "Mission", "Kern", "Writing", "Outro"],
+  },
 };
 
 export const TEMPO = ["zu langsam", "genau richtig", "zu schnell"] as const;

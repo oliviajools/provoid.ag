@@ -210,4 +210,75 @@ export const TEMPLATES: Record<string, { label: string; items: Template[] }> = {
       },
     ],
   },
+  // Foliennummern passen zum Foliensatz "AG KI · Session 3: Wie lernt ein Sprachmodell?" (Stand 11.11.2026, 25 Folien im Ablauf plus Reserve).
+  "wie-lernt-ein-sprachmodell": {
+    label: "Sitzung 3: Wie lernt ein Sprachmodell?",
+    items: [
+      {
+        title: "KI-Radar: Was habt ihr diese Woche über KI mitbekommen?", kind: "wall", slide: 3, until_slide: null, reveal_slide: null,
+        rows: ["Eine Meldung, ein Video oder etwas aus eurem Alltag"],
+        options: [], solution: null, private: false, homework: false,
+      },
+      {
+        title: "Mission: Wer hat entschieden, dass ChatGPT so redet?", kind: "wall", slide: 4, until_slide: null, reveal_slide: 21,
+        rows: ["Eure Vermutung"],
+        options: [], solution: null, private: false, homework: false,
+      },
+      {
+        title: "Wofür steht GPT?", kind: "wall", slide: 5, until_slide: null, reveal_slide: null,
+        rows: ["Eure Vermutung: Wofür stehen G, P und T?"],
+        options: [], solution: null, private: false, homework: false,
+      },
+      {
+        title: "Rohmodell: Was passiert?", kind: "grid", slide: 7, until_slide: null, reveal_slide: 8,
+        rows: ["Ein Modell hat nur gelernt, das nächste Wort vorherzusagen. Was macht es mit der Bitte um eine Entschuldigung?"],
+        options: ["Es schreibt die Entschuldigung", "Es schreibt weitere Bitten dazu", "Es fragt nach"], solution: [1], private: false, homework: false,
+      },
+      {
+        title: "Überraschung: Welches Modell fanden Menschen besser?", kind: "grid", slide: 9, until_slide: null, reveal_slide: null,
+        rows: ["Welche Antworten fanden die Bewertenden besser?"],
+        options: ["das kleine InstructGPT (1,3 Mrd.)", "das große GPT-3 (175 Mrd.)"], solution: null, private: false, homework: false,
+      },
+      {
+        title: "Was seht ihr?", kind: "wall", slide: 10, until_slide: null, reveal_slide: null,
+        rows: ["Was seht ihr?"],
+        options: [], solution: null, private: false, homework: false,
+      },
+      {
+        title: "Beobachtungsauftrag: Anil Seth", kind: "text", slide: 11, until_slide: 12, reveal_slide: null,
+        rows: ["Was ist der Unterschied zwischen Intelligenz und Bewusstsein?", "Warum halten wir KI für bewusst?", "Welche Rolle spielt unser Körper?"],
+        options: [], solution: null, private: false, homework: false,
+      },
+      {
+        title: "Ja-Sager-Chatbot: Für wen gefährlich?", kind: "wall", slide: 13, until_slide: null, reveal_slide: null,
+        rows: ["Bei wem wäre ein Chatbot, der allem zustimmt, gefährlich?"],
+        options: [], solution: null, private: false, homework: false,
+      },
+      {
+        title: "Der Regler: Welchen Stil würdet ihr wählen?", kind: "grid", slide: 15, until_slide: null, reveal_slide: null,
+        rows: ["Welchen Stil würdet ihr für euer ChatGPT einstellen?"],
+        options: ["Standard", "Zyniker", "Nerd", "Zuhörer", "Roboter"], solution: null, private: false, homework: false,
+      },
+      {
+        title: "Agenten auf Abwegen: Wer ist schuld?", kind: "grid", slide: 17, until_slide: null, reveal_slide: null,
+        rows: ["Die Agenten holen sich die Lösungen, statt die Aufgaben zu lösen. Wer ist schuld?"],
+        options: ["die KI", "die Menschen, die den Test gebaut haben", "beide", "niemand, das war ein Unfall"], solution: null, private: false, homework: false,
+      },
+      {
+        title: "Gandalf: Euer bester Trick", kind: "wall", slide: 19, until_slide: null, reveal_slide: null,
+        rows: ["Welcher Trick hat funktioniert, und bis zu welchem Level seid ihr gekommen?"],
+        options: [], solution: null, private: false, homework: false,
+      },
+      {
+        title: "Writing: Sollte ChatGPT weniger menschlich klingen?", kind: "text", slide: 22, until_slide: null, reveal_slide: null,
+        rows: ["Sollte ChatGPT weniger menschlich klingen? Begründe in zwei, drei Sätzen."],
+        options: [], solution: null, private: false, homework: false,
+      },
+      {
+        title: "Outro: Darf KI Menschen täuschen?", kind: "grid", slide: 24, until_slide: null, reveal_slide: null,
+        rows: ["Daisy täuscht Betrüger. Ist das in Ordnung?"],
+        options: ["Ja, klar", "Nur bei Betrügern", "Nein, Täuschen bleibt Täuschen"], solution: null, private: false, homework: false,
+      },
+    ],
+  },
 };
