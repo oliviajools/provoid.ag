@@ -281,4 +281,45 @@ export const TEMPLATES: Record<string, { label: string; items: Template[] }> = {
       },
     ],
   },
+  // Foliensatz "AG KI · Session 2 · Jg. 11/12: Kann eine KI fühlen?" (Stand 16.11.2026, 16 Folien). Folie 5 zeigt die Pinnwand aus Sitzung 1 (wird per SQL übernommen).
+  "kann-ki-fuehlen": {
+    label: "Sitzung 2 (Jg. 11/12): Kann eine KI fühlen?",
+    items: [
+      {
+        title: "News: Habt ihr den Microsoft-Ausfall bemerkt?", kind: "wall", slide: 3, until_slide: 4, reveal_slide: null,
+        rows: ["Wo hat es euch oder eure Familie getroffen?"],
+        options: [], solution: null, private: false, homework: false,
+      },
+      {
+        title: "Mission: Wird eine KI jemals ein Bewusstsein haben?", kind: "grid", slide: 7, until_slide: null, reveal_slide: null,
+        rows: ["Wird eine KI jemals ein Bewusstsein haben?"],
+        options: ["Ja", "Bin unsicher", "Nein"], solution: null, private: false, homework: false,
+      },
+      {
+        title: "Was seht ihr?", kind: "wall", slide: 8, until_slide: null, reveal_slide: null,
+        rows: ["Was seht ihr?"],
+        options: [], solution: null, private: false, homework: false,
+      },
+      {
+        title: "Beobachtungsauftrag: Anil Seth", kind: "text", slide: 9, until_slide: 10, reveal_slide: null,
+        rows: ["Was ist der Unterschied zwischen Intelligenz und Bewusstsein?", "Warum halten wir KI für bewusst?", "Welche Rolle spielt unser Körper?"],
+        options: [], solution: null, private: false, homework: false,
+      },
+      {
+        title: "Woran würdet ihr es erkennen?", kind: "wall", slide: 12, until_slide: null, reveal_slide: null,
+        rows: ["Woran würdet ihr erkennen, dass eine KI wirklich etwas fühlt?"],
+        options: [], solution: null, private: false, homework: false,
+      },
+      {
+        title: "Writing: Eine KI sagt, sie hat Angst", kind: "text", slide: 13, until_slide: null, reveal_slide: null,
+        rows: ["Eine KI sagt dir: „Ich habe Angst, abgeschaltet zu werden.“ Was machst du? Zwei, drei Sätze."],
+        options: [], solution: null, private: false, homework: false,
+      },
+      {
+        title: "Outro: Und jetzt? Bewusstsein bei KI", kind: "grid", slide: 15, until_slide: null, reveal_slide: null,
+        rows: ["Wird eine KI jemals ein Bewusstsein haben?"],
+        options: ["Ja", "Bin unsicher", "Nein"], solution: null, private: false, homework: false,
+      },
+    ],
+  },
 };
