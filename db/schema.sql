@@ -366,3 +366,6 @@ join users u on u.id = r.user_id and u.role = 'student'
 join ag_sessions s on s.id = i.session_id and s.group_id = u.group_id
 where not i.homework
 on conflict (session_id, user_id) do nothing;
+
+-- Nach einer Trennung gilt der alte gemeinsame AG-Code weiter zum Einloggen
+alter table groups add column if not exists alt_code text not null default '';

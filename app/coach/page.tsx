@@ -92,6 +92,7 @@ export default async function Coach() {
                       <summary>Kurzname, Jahrgänge und Termin bearbeiten</summary>
                       <div style={{ marginTop: 12 }}><EditGroupForm g={g} /></div>
                     </details>
+                    {g.alt_code && <p className="faint">Der frühere gemeinsame Code {g.alt_code} funktioniert für diese AG weiter zum Einloggen. Neue Registrierungen bitte nur mit {g.code}.</p>}
                     <p className="faint">Direktlink zur Anmeldung: <span style={{ color: "var(--muted)", userSelect: "all" }}>{joinUrl}</span></p>
                     {list.length > 0 && (
                       <div className="table-wrap">

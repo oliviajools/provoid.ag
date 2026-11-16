@@ -7,7 +7,7 @@ export const AG_COOKIE = "coach_ag";
 
 export type GroupOpt = {
   id: string; name: string; school: string; short_name: string; cohort: string; schedule: string;
-  code: string; starts: string | null; starts_iso: string | null; nr: number; label: string;
+  code: string; alt_code: string; starts: string | null; starts_iso: string | null; nr: number; label: string;
 };
 
 /** Anzeigename, der die AGs eindeutig trennt, z. B. „1 · GymEpp · Mi 14:05“. */
@@ -20,7 +20,7 @@ function labelOf(g: Omit<GroupOpt, "label">) {
 /** Alle AGs, die älteste zuerst (nach erstem Termin, dann nach Anlegedatum). */
 export async function listGroups(): Promise<GroupOpt[]> {
   const rows = await sql<Omit<GroupOpt, "label" | "nr">[]>`
-    select id, name, school, short_name, cohort, schedule, code,
+    select id, name, school, short_name, cohort, schedule, code, alt_code,
            to_char(starts_on, 'DD.MM.YYYY') as starts, to_char(starts_on, 'YYYY-MM-DD') as starts_iso
     from groups order by starts_on asc nulls last, created_at asc`;
   return rows.map((r, i) => { const g = { ...r, nr: i + 1 }; return { ...g, label: labelOf(g) }; });

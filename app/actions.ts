@@ -22,7 +22,9 @@ export async function login(_: FormState, form: FormData): Promise<FormState> {
 
   const rows = await sql<{ id: string; password_hash: string; disabled: boolean }[]>`
     select u.id, u.password_hash, u.disabled from users u join groups g on g.id = u.group_id
-    where g.code = ${code} and u.role = 'student' and u.pseudonym_lower = ${pseudonym.toLowerCase()}`;
+    where (g.code = ${code} or (g.alt_code <> '' and g.alt_code = ${code}))
+      and u.role = 'student' and u.pseudonym_lower = ${pseudonym.toLowerCase()}
+    order by (g.code = ${code}) desc limit 1`;
   const user = rows[0];
   if (!user || !(await verifyPassword(password, user.password_hash))) {
     await recordFailure(key);
