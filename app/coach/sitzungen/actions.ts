@@ -140,3 +140,36 @@ export async function renameMaterial(form: FormData) {
   const [m] = await sql<{ session_id: string }[]>`update materials set title = ${title} where id = ${id} returning session_id`;
   if (m) refresh(m.session_id);
 }
+
+/** Anwesenheit und Protokoll einer Sitzung speichern. Felder: att:<user_id> = present | excused | absent | "" */
+export async function saveAttendance(_: ActState, form: FormData): Promise<ActState> {
+  await requireCoach();
+  const id = String(form.get("session_id") ?? "");
+  if (!/^[0-9a-f-]{36}$/i.test(id)) return { error: "Sitzung nicht gefunden." };
+  const [s] = await sql<{ group_id: string }[]>`select group_id from ag_sessions where id = ${id}`;
+  if (!s) return { error: "Sitzung nicht gefunden." };
+  const members = await sql<{ id: string }[]>`select id from users where group_id = ${s.group_id} and role = 'student'`;
+  const ids = new Set(members.map((m) => m.id));
+  const restAbsent = form.get("rest_absent") === "on";
+  let n = 0;
+  for (const uid of ids) {
+    const raw = String(form.get(`att:${uid}`) ?? "");
+    const status = raw === "present" || raw === "excused" || raw === "absent" ? raw : restAbsent ? "absent" : "";
+    if (status) {
+      // Unveränderte automatische Einträge bleiben automatisch, alles andere gilt als von der Coach gesetzt
+      await sql`
+        insert into attendance (session_id, user_id, status, source) values (${id}, ${uid}, ${status}, 'manual')
+        on conflict (session_id, user_id) do update
+          set status = excluded.status, marked_at = now(),
+              source = case when attendance.status = excluded.status then attendance.source else 'manual' end`;
+      n++;
+    } else {
+      await sql`delete from attendance where session_id = ${id} and user_id = ${uid}`;
+    }
+  }
+  const protocol = String(form.get("protocol") ?? "").slice(0, 5000);
+  await sql`update ag_sessions set protocol = ${protocol} where id = ${id}`;
+  revalidatePath(`/coach/sitzungen/${id}`);
+  revalidatePath("/coach/dokumentation");
+  return { ok: `Gespeichert: ${n} ${n === 1 ? "Eintrag" : "Einträge"}.` };
+}

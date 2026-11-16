@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { sql } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
+import { listGroups, pickGroup } from "@/lib/groups";
+import { AgPicker, AgTag } from "@/components/AgPicker";
 import { Topbar } from "@/components/Topbar";
 import { THEMES, topThemes, type Answers } from "@/lib/compass";
 
@@ -14,8 +16,9 @@ export default async function Ideen({ searchParams }: { searchParams: Promise<{ 
   const user = await requireUser();
   const { ag } = await searchParams;
   const isCoach = user.role === "coach";
-  const groups = isCoach ? await sql<{ id: string; name: string }[]>`select id, name from groups order by created_at desc` : [];
-  const groupId = isCoach ? (groups.find((g) => g.id === ag)?.id ?? groups[0]?.id) : user.group_id;
+  const groups = isCoach ? await listGroups() : [];
+  const group = isCoach ? await pickGroup(groups, ag) : undefined;
+  const groupId = isCoach ? group?.id : user.group_id;
 
   const rows = groupId
     ? await sql<Row[]>`
@@ -37,17 +40,7 @@ export default async function Ideen({ searchParams }: { searchParams: Promise<{ 
               <h1>Was wir bauen würden, wenn alles ginge.</h1>
               <p className="lead">Die Traumprojekte eurer AG. Entdeckst du jemanden mit einer ähnlichen Idee? Sprecht in der nächsten Session darüber.</p>
             </div>
-            {isCoach && groups.length > 1 && (
-              <form className="stack" style={{ gap: 6 }}>
-                <label htmlFor="ag" className="faint">AG wählen</label>
-                <div style={{ display: "flex", gap: 8 }}>
-                  <select id="ag" name="ag" defaultValue={groupId ?? undefined} className="select">
-                    {groups.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
-                  </select>
-                  <button className="btn ghost small" type="submit">Anzeigen</button>
-                </div>
-              </form>
-            )}
+            {isCoach && <AgPicker groups={groups} current={group} next="/ideen" />}
           </section>
 
           {!mine && (

@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { sql } from "@/lib/db";
 import { requireCoach } from "@/lib/auth";
+import { listGroups, pickGroup } from "@/lib/groups";
+import { AgPicker, AgTag } from "@/components/AgPicker";
 import { Topbar } from "@/components/Topbar";
 import { Radar } from "@/components/Radar";
 import {
@@ -30,8 +32,8 @@ function Bars({ items, total }: { items: [string, number][]; total: number }) {
 export default async function CoachKompass({ searchParams }: { searchParams: Promise<{ ag?: string }> }) {
   const coach = await requireCoach();
   const { ag } = await searchParams;
-  const groups = await sql<{ id: string; name: string }[]>`select id, name from groups order by created_at desc`;
-  const group = groups.find((g) => g.id === ag) ?? groups[0];
+  const groups = await listGroups();
+  const group = await pickGroup(groups, ag);
 
   const rows = group
     ? await sql<Row[]>`
@@ -66,19 +68,12 @@ export default async function CoachKompass({ searchParams }: { searchParams: Pro
         <div className="container page" style={{ gap: 40 }}>
           <section className="welcome">
             <div className="stack" style={{ gap: 14 }}>
-              <div className="tags"><span className="tag outline">Kompass-Auswertung</span>{group && <span className="tag">{group.name}</span>}</div>
+              <div className="tags"><span className="tag outline">Kompass-Auswertung</span><AgTag g={group} /></div>
               <h1>{n} von {rows.length} haben ihren Kompass ausgefüllt.</h1>
               {missing.length > 0 && <p className="muted">Noch offen: {missing.join(", ")}</p>}
             </div>
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "flex-end" }}>
-              {groups.length > 1 && (
-                <form style={{ display: "flex", gap: 8 }}>
-                  <select name="ag" defaultValue={group?.id} className="select" aria-label="AG wählen">
-                    {groups.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
-                  </select>
-                  <button className="btn ghost small" type="submit">Anzeigen</button>
-                </form>
-              )}
+              <AgPicker groups={groups} current={group} next="/coach/kompass" />
               <Link className="btn ghost" href={`/ideen${group ? `?ag=${group.id}` : ""}`}>Ideen-Wand</Link>
               <Link className="btn ghost" href="/kompass">Befragung ansehen</Link>
             </div>

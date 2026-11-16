@@ -72,3 +72,49 @@ export async function resetPassword(_: ResetState, form: FormData): Promise<Rese
   await sql`delete from login_attempts where key like ${"student:%:" + u.pseudonym.toLowerCase()}`;
   return { pseudonym: u.pseudonym, password: temp };
 }
+
+const groupDetails = z.object({
+  id: z.string().uuid(),
+  name: z.string().trim().min(2, "Bitte gib der AG einen Namen.").max(80),
+  school: z.string().trim().max(80),
+  short_name: z.string().trim().max(30),
+  cohort: z.string().trim().max(30),
+  schedule: z.string().trim().max(40),
+  starts_on: z.string().regex(/^(\d{4}-\d{2}-\d{2})?$/),
+});
+
+/** Kurzname, Jahrgänge und Termin einer AG ändern. So bleiben die AGs in jeder Auswahl unterscheidbar. */
+export async function updateGroup(_: FormState, form: FormData): Promise<FormState> {
+  await requireCoach();
+  const p = groupDetails.safeParse({
+    id: form.get("id"), name: form.get("name") ?? "", school: form.get("school") ?? "",
+    short_name: form.get("short_name") ?? "", cohort: form.get("cohort") ?? "",
+    schedule: form.get("schedule") ?? "", starts_on: form.get("starts_on") ?? "",
+  });
+  if (!p.success) return { error: p.error.issues[0].message };
+  const d = p.data;
+  await sql`update groups set name = ${d.name}, school = ${d.school}, short_name = ${d.short_name},
+            cohort = ${d.cohort}, schedule = ${d.schedule}, starts_on = ${d.starts_on || null}
+            where id = ${d.id}`;
+  revalidatePath("/coach", "layout");
+  return { ok: "Gespeichert." };
+}
+
+/** Eine Person in eine andere AG verschieben (z. B. falls sie sich mit dem falschen AG-Code registriert hat). */
+export async function moveMember(_: FormState, form: FormData): Promise<FormState> {
+  await requireCoach();
+  const p = z.object({ user_id: z.string().uuid(), group_id: z.string().uuid() })
+    .safeParse({ user_id: form.get("user_id"), group_id: form.get("group_id") });
+  if (!p.success) return { error: "Bitte eine AG wählen." };
+  try {
+    const rows = await sql`update users set group_id = ${p.data.group_id}
+                           where id = ${p.data.user_id} and role = 'student' returning id`;
+    if (!rows.length) return { error: "Konto nicht gefunden." };
+  } catch (e: unknown) {
+    if ((e as { code?: string }).code === "23505") return { error: "In der Ziel-AG gibt es den Namen schon. Bitte erst dort umbenennen." };
+    throw e;
+  }
+  await sql`delete from live_presence where user_id = ${p.data.user_id}`;
+  revalidatePath("/coach", "layout");
+  return { ok: "Verschoben." };
+}

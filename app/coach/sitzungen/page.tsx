@@ -3,6 +3,8 @@ import Link from "next/link";
 import { sql } from "@/lib/db";
 import { requireCoach } from "@/lib/auth";
 import { PHASES, germanDay, type Phase } from "@/lib/sessions";
+import { listGroups, pickGroup } from "@/lib/groups";
+import { AgPicker, AgTag } from "@/components/AgPicker";
 import { Topbar } from "@/components/Topbar";
 import { NewSessionForm, SeriesForm } from "./SessionForms";
 
@@ -14,9 +16,8 @@ type Row = { id: string; number: number; title: string; date_label: string | nul
 export default async function CoachSessions({ searchParams }: { searchParams: Promise<{ ag?: string }> }) {
   const coach = await requireCoach();
   const { ag } = await searchParams;
-  const groups = await sql<{ id: string; name: string; starts: string | null }[]>`
-    select id, name, to_char(starts_on, 'YYYY-MM-DD') as starts from groups order by created_at desc`;
-  const group = groups.find((g) => g.id === ag) ?? groups[0];
+  const groups = await listGroups();
+  const group = await pickGroup(groups, ag);
   const rows = group ? await sql<Row[]>`
     select s.id, s.number, s.title, s.phase, s.published, to_char(s.date, 'Dy DD.MM.YYYY') as date_label,
            (s.date < (now() at time zone 'Europe/Berlin')::date) as past,
@@ -31,18 +32,11 @@ export default async function CoachSessions({ searchParams }: { searchParams: Pr
         <div className="container page" style={{ gap: 40 }}>
           <section className="welcome">
             <div className="stack" style={{ gap: 14 }}>
-              <div className="tags"><span className="tag outline">Sitzungen und Material</span>{group && <span className="tag">{group.name}</span>}</div>
+              <div className="tags"><span className="tag outline">Sitzungen und Material</span><AgTag g={group} /></div>
               <h1>Material zum Vertiefen.</h1>
               <p className="lead">Lege die Sitzungen an und häng Folien, Links und Aufgaben dran. Die Teilnehmenden sehen nur veröffentlichte Sitzungen und schreiben dort ihre eigenen Notizen.</p>
             </div>
-            {groups.length > 1 && (
-              <form style={{ display: "flex", gap: 8 }}>
-                <select name="ag" defaultValue={group?.id} className="select" aria-label="AG wählen">
-                  {groups.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
-                </select>
-                <button className="btn ghost small" type="submit">Anzeigen</button>
-              </form>
-            )}
+            <AgPicker groups={groups} current={group} next="/coach/sitzungen" />
           </section>
 
           {!group ? <p className="muted">Leg zuerst im Coach-Bereich eine AG an.</p> : (

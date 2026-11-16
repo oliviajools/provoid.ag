@@ -11,6 +11,10 @@ import { DeleteSession, EditSessionForm, LinkForm, TextForm, Uploader } from "..
 import { KIND_LABEL, TEMPLATES, liveSlide, loadItems, type LiveItem } from "@/lib/live";
 import { liveItemOp, stopLive } from "../live-actions";
 import { DeckUpload, LiveItemForm, TemplateForm } from "../LiveForms";
+import { AttendanceForm } from "../AttendanceForm";
+import { attendanceFor } from "@/lib/attendance";
+import { listGroups } from "@/lib/groups";
+import { AgTag } from "@/components/AgPicker";
 
 function slideInfo(i: LiveItem) {
   const parts: string[] = [];
@@ -43,6 +47,9 @@ export default async function CoachSession({ params }: { params: Promise<{ id: s
     select id, number from ag_sessions where group_id = ${s.group_id} order by number`;
   const pos = nav.findIndex((n) => n.id === id);
   const items = await loadItems(id);
+  const att = await attendanceFor(id, s.group_id);
+  const [{ protocol }] = await sql<{ protocol: string }[]>`select protocol from ag_sessions where id = ${id}`;
+  const group = (await listGroups()).find((g) => g.id === s.group_id);
   const live = await liveSlide(id);
   const [deck] = await sql<{ filename: string; slides: number; at: string }[]>`
     select filename, slides, to_char(uploaded_at at time zone 'Europe/Berlin', 'DD.MM. HH24:MI') as at from session_decks where session_id = ${id}`;
@@ -64,6 +71,7 @@ export default async function CoachSession({ params }: { params: Promise<{ id: s
               </span>
             </div>
             <div className="tags">
+              <AgTag g={group} />
               <span className="tag outline">Sitzung {s.number}</span>
               {s.date_label && <span className="tag">{germanDay(s.date_label)}</span>}
               <span className={`tag`}>{s.published ? "veröffentlicht" : "Entwurf, für Teilnehmende unsichtbar"}</span>
@@ -82,6 +90,11 @@ export default async function CoachSession({ params }: { params: Promise<{ id: s
           <section className="card">
             <header><h3>Angaben</h3></header>
             <EditSessionForm s={s} />
+          </section>
+
+          <section className="card" id="anwesenheit">
+            <header><h3>Anwesenheit und Protokoll</h3><span className="chip">{att.filter((a) => a.status === "present").length} da</span></header>
+            <div className="body"><AttendanceForm sessionId={s.id} rows={att} protocol={protocol} /></div>
           </section>
 
           <section className="section" id="live">

@@ -5,12 +5,13 @@ import { sql } from "@/lib/db";
 import { requireCoach } from "@/lib/auth";
 import { Topbar } from "@/components/Topbar";
 import { toggleDisabled, toggleRegistration } from "./actions";
-import { CreateGroupForm, ResetPasswordButton } from "./CoachForms";
+import { CreateGroupForm, EditGroupForm, MoveMemberForm, ResetPasswordButton } from "./CoachForms";
+import { listGroups } from "@/lib/groups";
 
 export const metadata: Metadata = { title: "Coach" };
 export const dynamic = "force-dynamic";
 
-type Group = { id: string; name: string; school: string; code: string; registration_open: boolean; starts: string | null; members: number };
+type Group = { id: string; registration_open: boolean; members: number };
 type Member = { id: string; group_id: string; pseudonym: string; disabled: boolean; created: string; last_login: string | null; must_change_password: boolean };
 
 export default async function Coach() {
@@ -20,11 +21,10 @@ export default async function Coach() {
   const proto = h.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
 
   const [{ n: pendingNews }] = await sql<{ n: number }[]>`select count(*)::int as n from news_items where status = 'pending' and origin = 'kid'`;
-  const groups = await sql<Group[]>`
-    select g.id, g.name, g.school, g.code, g.registration_open,
-           to_char(g.starts_on, 'DD.MM.YYYY') as starts,
-           (select count(*)::int from users u where u.group_id = g.id) as members
-    from groups g order by g.created_at desc`;
+  const opts = await listGroups();
+  const extra = await sql<Group[]>`
+    select g.id, g.registration_open, (select count(*)::int from users u where u.group_id = g.id) as members from groups g`;
+  const groups = opts.map((o) => ({ ...o, ...(extra.find((e) => e.id === o.id) ?? { registration_open: false, members: 0 }) }));
   const members = await sql<Member[]>`
     select id, group_id, pseudonym, disabled, must_change_password,
            to_char(created_at at time zone 'Europe/Berlin', 'DD.MM.YY') as created,
@@ -45,6 +45,7 @@ export default async function Coach() {
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
               <Link href="/coach/radar" className="btn">KI-Radar{pendingNews > 0 ? ` (${pendingNews} neu)` : ""}</Link>
               <Link href="/coach/sitzungen" className="btn ghost">Sitzungen und Material</Link>
+              <Link href="/coach/dokumentation" className="btn ghost">Dokumentation</Link>
               <Link href="/coach/gaeste" className="btn ghost">Gäste</Link>
               <Link href="/coach/anmeldungen" className="btn ghost">Anmeldungen</Link>
               <Link href="/themen" className="btn ghost">Themenwünsche</Link>
@@ -66,11 +67,11 @@ export default async function Coach() {
               const list = members.filter((m) => m.group_id === g.id);
               const joinUrl = `${proto}://${host}/registrieren?code=${g.code}`;
               return (
-                <article className="card" key={g.id}>
+                <article className={`card ag-card ag-${((g.nr - 1) % 3) + 1}`} key={g.id}>
                   <header>
                     <div className="stack" style={{ gap: 2 }}>
-                      <h3>{g.name}</h3>
-                      <span className="faint">{[g.school, g.starts && `Start ${g.starts}`].filter(Boolean).join(" · ")}</span>
+                      <h3>{g.label}</h3>
+                      <span className="faint">{[g.name, g.school, g.starts && `Start ${g.starts}`].filter(Boolean).join(" · ")}</span>
                     </div>
                     <span className="codebox" aria-label="AG-Code">{g.code}</span>
                   </header>
@@ -87,6 +88,10 @@ export default async function Coach() {
                         </button>
                       </form>
                     </div>
+                    <details>
+                      <summary>Kurzname, Jahrgänge und Termin bearbeiten</summary>
+                      <div style={{ marginTop: 12 }}><EditGroupForm g={g} /></div>
+                    </details>
                     <p className="faint">Direktlink zur Anmeldung: <span style={{ color: "var(--muted)", userSelect: "all" }}>{joinUrl}</span></p>
                     {list.length > 0 && (
                       <div className="table-wrap">
@@ -108,6 +113,7 @@ export default async function Coach() {
                                 <td>
                                   <div className="actions">
                                     <ResetPasswordButton userId={m.id} />
+                                    {groups.length > 1 && <MoveMemberForm userId={m.id} groups={groups.filter((o) => o.id !== g.id).map((o) => ({ id: o.id, label: o.label }))} />}
                                     <form action={toggleDisabled}>
                                       <input type="hidden" name="user_id" value={m.id} />
                                       <button className="btn ghost small" type="submit">{m.disabled ? "Aktivieren" : "Pausieren"}</button>

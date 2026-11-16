@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { sql } from "@/lib/db";
 import { requireCoach } from "@/lib/auth";
+import { listGroups, pickGroup } from "@/lib/groups";
+import { AgPicker, AgTag } from "@/components/AgPicker";
 import { Topbar } from "@/components/Topbar";
 import { A1, COMPETENCIES, EVALS, OPEN, SCENARIOS, TEMPO, scored, type EvalAnswers } from "@/lib/evaluation";
 
@@ -24,8 +26,8 @@ function Bar({ label, value, max = 5, note }: { label: string; value: number | n
 export default async function CoachEvaluation({ searchParams }: { searchParams: Promise<{ ag?: string; bogen?: string }> }) {
   const coach = await requireCoach();
   const { ag, bogen } = await searchParams;
-  const groups = await sql<{ id: string; name: string }[]>`select id, name from groups order by created_at desc`;
-  const group = groups.find((g) => g.id === ag) ?? groups[0];
+  const groups = await listGroups();
+  const group = await pickGroup(groups, ag);
   const def = EVALS[bogen ?? ""] ?? EVALS["2"];
   const rows = group
     ? await sql<{ answers: EvalAnswers }[]>`select answers from eval_responses where group_id = ${group.id} and eval_id = ${def.id}`
@@ -54,17 +56,14 @@ export default async function CoachEvaluation({ searchParams }: { searchParams: 
         <div className="container page" style={{ gap: 36 }}>
           <section className="welcome">
             <div className="stack" style={{ gap: 14 }}>
-              <div className="tags"><span className="tag outline">Evaluation, anonym</span>{group && <span className="tag">{group.name}</span>}</div>
+              <div className="tags"><span className="tag outline">Evaluation, anonym</span><AgTag g={group} /></div>
               <h1>{def.label}: {n} {n === 1 ? "Antwort" : "Antworten"}</h1>
               <p className="muted">Ohne Namen gespeichert. Für Berichte an die Schule nur Gruppenwerte ab 5 Antworten weitergeben.</p>
             </div>
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "flex-end" }}>
+              <AgPicker groups={groups} current={group} next={`/coach/evaluation?bogen=${def.id}`} />
               <form style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                {groups.length > 1 && (
-                  <select name="ag" defaultValue={group?.id} className="select" aria-label="AG wählen">
-                    {groups.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
-                  </select>
-                )}
+                {group && <input type="hidden" name="ag" value={group.id} />}
                 <select name="bogen" defaultValue={def.id} className="select" aria-label="Bogen wählen">
                   {Object.values(EVALS).map((e) => <option key={e.id} value={e.id}>{e.label}</option>)}
                 </select>

@@ -328,3 +328,41 @@ create table if not exists eval_responses (
   submitted_on date not null default current_date,
   unique (group_id, eval_id, code)
 );
+
+-- Drei AGs sauber trennen: Kurzname, Jahrgänge und fester Termin erscheinen in jeder Auswahl
+alter table groups add column if not exists short_name text not null default '';
+alter table groups add column if not exists cohort     text not null default '';
+alter table groups add column if not exists schedule   text not null default '';
+update groups set short_name = 'GymEpp', schedule = 'Mi 14:05',
+       school = case when school = '' then 'Gymnasium Eppendorf' else school end
+where code = 'GYM7EKL' and short_name = '';
+update groups set short_name = 'Johanneum', cohort = 'Jg. 9/10', schedule = 'Mi, ungerade KW',
+       school = case when school = '' then 'Gelehrtenschule des Johanneums' else school end
+where starts_on = date '2026-11-04' and short_name = '';
+update groups set short_name = 'Johanneum', cohort = 'Jg. 11/12', schedule = 'Mo 12:10',
+       school = case when school = '' then 'Gelehrtenschule des Johanneums' else school end
+where starts_on = date '2026-11-09' and short_name = '';
+
+-- Anwesenheit je Sitzung. source: 'auto' (Gerät war während der Live-Sitzung verbunden) oder 'manual' (von der Coach gesetzt)
+create table if not exists attendance (
+  session_id uuid not null references ag_sessions(id) on delete cascade,
+  user_id    uuid not null references users(id) on delete cascade,
+  status     text not null check (status in ('present', 'excused', 'absent')),
+  source     text not null default 'manual' check (source in ('auto', 'manual')),
+  marked_at  timestamptz not null default now(),
+  primary key (session_id, user_id)
+);
+create index if not exists attendance_user on attendance (user_id);
+
+-- Protokoll für die Dokumentation: was wir geschafft haben, Besonderheiten
+alter table ag_sessions add column if not exists protocol text not null default '';
+
+-- Rückwirkend: wer in einer Sitzung live geantwortet hat, war da
+insert into attendance (session_id, user_id, status, source)
+select distinct i.session_id, r.user_id, 'present', 'auto'
+from live_responses r
+join live_items i on i.id = r.item_id
+join users u on u.id = r.user_id and u.role = 'student'
+join ag_sessions s on s.id = i.session_id and s.group_id = u.group_id
+where not i.homework
+on conflict (session_id, user_id) do nothing;

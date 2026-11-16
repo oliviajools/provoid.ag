@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { sql } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
+import { listGroups, pickGroup } from "@/lib/groups";
+import { AgPicker, AgTag } from "@/components/AgPicker";
 import { Topbar } from "@/components/Topbar";
 import { deleteOwnWish, setWishStatus, toggleVote } from "./actions";
 import { WishForm } from "./WishForm";
@@ -18,8 +20,9 @@ export default async function Themen({ searchParams }: { searchParams: Promise<{
   const user = await requireUser();
   const isCoach = user.role === "coach";
   const { ag } = await searchParams;
-  const groups = isCoach ? await sql<{ id: string; name: string }[]>`select id, name from groups order by created_at desc` : [];
-  const groupId = isCoach ? (groups.find((g) => g.id === ag)?.id ?? groups[0]?.id) : user.group_id;
+  const groups = isCoach ? await listGroups() : [];
+  const group = isCoach ? await pickGroup(groups, ag) : undefined;
+  const groupId = isCoach ? group?.id : user.group_id;
   const wishes = groupId ? await sql<Wish[]>`
     select w.id, w.title, w.details, w.anonymous, w.status, w.coach_note,
            u.pseudonym as author, (w.user_id = ${user.id}) as mine,
@@ -93,14 +96,7 @@ export default async function Themen({ searchParams }: { searchParams: Promise<{
                   : "Trag ein, was dich an KI interessiert, und stimm bei den Wünschen der anderen ab. Was viele wollen, kommt in die AG."}
               </p>
             </div>
-            {isCoach && groups.length > 1 && (
-              <form style={{ display: "flex", gap: 8 }}>
-                <select name="ag" defaultValue={groupId ?? undefined} className="select" aria-label="AG wählen">
-                  {groups.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
-                </select>
-                <button className="btn ghost small" type="submit">Anzeigen</button>
-              </form>
-            )}
+            {isCoach && <AgPicker groups={groups} current={group} next="/themen" />}
           </section>
 
           <div className={isCoach ? "" : "submit-grid"}>

@@ -3,6 +3,8 @@ import Link from "next/link";
 import { sql } from "@/lib/db";
 import { requireCoach } from "@/lib/auth";
 import { loadGuests } from "@/lib/guests";
+import { listGroups, pickGroup } from "@/lib/groups";
+import { AgPicker, AgTag } from "@/components/AgPicker";
 import { Topbar } from "@/components/Topbar";
 import { GuestCard } from "@/components/GuestCard";
 import { guestToggle } from "./actions";
@@ -14,8 +16,8 @@ export const dynamic = "force-dynamic";
 export default async function CoachGuests({ searchParams }: { searchParams: Promise<{ ag?: string }> }) {
   const coach = await requireCoach();
   const { ag } = await searchParams;
-  const groups = await sql<{ id: string; name: string }[]>`select id, name from groups order by created_at desc`;
-  const group = groups.find((g) => g.id === ag) ?? groups[0];
+  const groups = await listGroups();
+  const group = await pickGroup(groups, ag);
   const guests = group ? await loadGuests({ groupId: group.id, onlyPublished: false }) : [];
   const sessions = group ? await sql<{ id: string; number: number; title: string; d: string | null }[]>`
     select id, number, title, to_char(date, 'DD.MM.') as d from ag_sessions where group_id = ${group.id} order by number` : [];
@@ -38,18 +40,11 @@ export default async function CoachGuests({ searchParams }: { searchParams: Prom
         <div className="container page" style={{ gap: 36 }}>
           <section className="welcome">
             <div className="stack" style={{ gap: 14 }}>
-              <div className="tags"><span className="tag outline">Gäste</span>{group && <span className="tag">{group.name}</span>}</div>
+              <div className="tags"><span className="tag outline">Gäste</span><AgTag g={group} /></div>
               <h1>Wer besucht die AG?</h1>
               <p className="lead">Kündige Gäste an, sobald sie zugesagt haben. Die Teilnehmenden können vorab Fragen schicken, die nur du siehst.</p>
             </div>
-            {groups.length > 1 && (
-              <form style={{ display: "flex", gap: 8 }}>
-                <select name="ag" defaultValue={group?.id} className="select" aria-label="AG wählen">
-                  {groups.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
-                </select>
-                <button className="btn ghost small" type="submit">Anzeigen</button>
-              </form>
-            )}
+            <AgPicker groups={groups} current={group} next="/coach/gaeste" />
           </section>
           {!group ? <p className="muted">Leg zuerst eine AG an.</p> : (
             <>

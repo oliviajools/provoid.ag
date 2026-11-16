@@ -1,5 +1,6 @@
 import { activeFor, liveSlide, loadItems, myAnswers, results } from "@/lib/live";
 import { guard, json, touchPresence } from "@/lib/live-api";
+import { markPresentAuto } from "@/lib/attendance";
 
 export const dynamic = "force-dynamic";
 
@@ -11,6 +12,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ sessionI
   await touchPresence(g.user);
   const slide = await liveSlide(sessionId);
   if (slide === null) return json({ live: false });
+  if (g.user.role === "student" && g.user.group_id === g.session.group_id) await markPresentAuto(sessionId, g.user.id);
   const items = await loadItems(sessionId);
   const a = activeFor(items, slide);
   if (!a) return json({ live: true, slide, active: null });
