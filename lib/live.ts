@@ -14,6 +14,10 @@ export type LiveItem = {
   slide: number | null; until_slide: number | null; reveal_slide: number | null;
   rows: string[]; options: string[]; solution: (number | null)[] | null;
   private: boolean; homework: boolean; closed: boolean;
+  /** Teil des Aufgabenpfads: im eigenen Tempo, unabhängig von der Folie. */
+  self_paced: boolean;
+  /** Kurzer Erklärtext, der im Aufgabenpfad über der Aufgabe steht. */
+  info: string;
 };
 
 /** Live gilt höchstens drei Stunden nach der letzten Bewegung in der Präsentation. */
@@ -25,14 +29,14 @@ export const CLOUD_MAX_LEN = 40;
 
 export async function loadItems(sessionId: string) {
   return sql<LiveItem[]>`
-    select id, session_id, position, title, kind, slide, until_slide, reveal_slide, rows, options, solution, private, homework, closed
+    select id, session_id, position, title, kind, slide, until_slide, reveal_slide, rows, options, solution, private, homework, closed, self_paced, info
     from live_items where session_id = ${sessionId} order by position, created_at`;
 }
 
 export async function loadItem(id: string) {
   if (!/^[0-9a-f-]{36}$/i.test(id)) return null;
   return (await sql<LiveItem[]>`
-    select id, session_id, position, title, kind, slide, until_slide, reveal_slide, rows, options, solution, private, homework, closed
+    select id, session_id, position, title, kind, slide, until_slide, reveal_slide, rows, options, solution, private, homework, closed, self_paced, info
     from live_items where id = ${id}`)[0] ?? null;
 }
 
@@ -56,7 +60,7 @@ export function activeFor(items: LiveItem[], slide: number | null): { item: Live
 /** Darf jetzt geantwortet werden? */
 export async function canAnswer(item: LiveItem) {
   if (item.closed) return false;
-  if (item.homework) return true;
+  if (item.homework || item.self_paced) return true;
   const slide = await liveSlide(item.session_id);
   const a = activeFor([item], slide);
   return a?.mode === "open";
@@ -113,7 +117,7 @@ export async function myAnswers(itemId: string, userId: string) {
 }
 
 /** Vorlagen für fertige Foliensätze. */
-type Template = Omit<LiveItem, "id" | "session_id" | "position" | "closed">;
+type Template = Omit<LiveItem, "id" | "session_id" | "position" | "closed" | "self_paced" | "info"> & { self_paced?: boolean; info?: string };
 export const TEMPLATES: Record<string, { label: string; items: Template[] }> = {
   // Foliennummern passen zum Foliensatz "AG KI · Session 1: Mensch vs. Maschine" mit 17 Folien (Stand 04.11.2026, mit Gastfolie Ana Goldbeck auf Folie 14).
   "mensch-vs-maschine": {
@@ -286,8 +290,8 @@ export const TEMPLATES: Record<string, { label: string; items: Template[] }> = {
     label: "Sitzung 2 (Jg. 11/12): Kann eine KI fühlen?",
     items: [
       {
-        title: "News: Habt ihr den Microsoft-Ausfall bemerkt?", kind: "wall", slide: 3, until_slide: 4, reveal_slide: null,
-        rows: ["Wo hat es euch oder eure Familie getroffen?"],
+        title: "News: Nvidia ohne Jensen Huang", kind: "wall", slide: 3, until_slide: 4, reveal_slide: null,
+        rows: ["Was bedeutet das für die KI-Welt? Eure Gedanken"],
         options: [], solution: null, private: false, homework: false,
       },
       {
@@ -319,6 +323,72 @@ export const TEMPLATES: Record<string, { label: string; items: Template[] }> = {
         title: "Outro: Und jetzt? Bewusstsein bei KI", kind: "grid", slide: 15, until_slide: null, reveal_slide: null,
         rows: ["Wird eine KI jemals ein Bewusstsein haben?"],
         options: ["Ja", "Bin unsicher", "Nein"], solution: null, private: false, homework: false,
+      },
+    ],
+  },
+  // Foliensatz "AG KI · Kann eine KI fühlen? (zum Selbstbearbeiten)" (Stand 17.11.2026, 13 Folien). Der Aufgabenpfad läuft im eigenen Tempo, die Auflösungen auf Folie 7 bis 10.
+  "kann-ki-fuehlen-pfad": {
+    label: "Kann eine KI fühlen? (Video und Aufgabenpfad zum Selbstbearbeiten)",
+    items: [
+      {
+        title: "Was seht ihr?", kind: "wall", slide: 3, until_slide: null, reveal_slide: null,
+        rows: ["Was seht ihr?"],
+        options: [], solution: null, private: false, homework: false,
+      },
+      {
+        title: "Mission: Wird eine KI jemals ein Bewusstsein haben?", kind: "grid", slide: 4, until_slide: null, reveal_slide: null,
+        rows: ["Wird eine KI jemals ein Bewusstsein haben?"],
+        options: ["Ja", "Bin unsicher", "Nein"], solution: null, private: false, homework: false,
+      },
+      {
+        title: "Können oder erleben?", kind: "grid", slide: null, until_slide: null, reveal_slide: 7,
+        rows: ["Ein Schachspiel gewinnen", "Zahnschmerzen spüren", "Einen Text ins Englische übersetzen", "Sich über ein Geschenk freuen", "Eine Matheaufgabe lösen", "Den Geschmack von Schokolade erleben"],
+        options: ["Intelligenz (können)", "Bewusstsein (erleben)"], solution: [0, 1, 0, 1, 0, 1], private: false, homework: false, self_paced: true, info: "Forschende unterscheiden zwei Dinge. Intelligenz heißt: etwas können. Bewusstsein heißt: etwas erleben, es fühlt sich für dich irgendwie an. Ordne zu.",
+      },
+      {
+        title: "Video-Check", kind: "text", slide: null, until_slide: null, reveal_slide: null,
+        rows: ["So bewusst ist KI schon: Was spricht laut Video dafür?", "Eigenleben: Was machen die KI-Agenten, und warum wirkt das so menschlich?", "Die perfekte Illusion: Warum könnte das alles nur Schein sein?"],
+        options: [], solution: null, private: false, homework: false, self_paced: true, info: "Jede Frage gehört zu einem Kapitel des Videos. Ein, zwei Sätze pro Frage reichen.",
+      },
+      {
+        title: "Gesichter in Wolken", kind: "wall", slide: null, until_slide: null, reveal_slide: null,
+        rows: ["Wo hast du schon einmal ein Gesicht oder ein Gefühl in etwas gesehen, das keines hat?"],
+        options: [], solution: null, private: false, homework: false, self_paced: true, info: "Unser Gehirn sucht überall nach Gesichtern und Gefühlen. Das nennt man Pareidolie: Wir sehen ein Gesicht in einer Steckdose, einem Auto oder einer Wolke. Manche geben sogar ihrem Saugroboter einen Namen.",
+      },
+      {
+        title: "Ein Chatbot tröstet dich", kind: "text", slide: null, until_slide: null, reveal_slide: null,
+        rows: ["Wie wirkt diese Antwort auf dich?", "Woher „weiß“ der Chatbot, dass man so antwortet? Tipp: Er hat aus Millionen Texten von Menschen gelernt."],
+        options: [], solution: null, private: false, homework: false, self_paced: true, info: "Stell dir vor, du schreibst einem Chatbot, dass du einen schlechten Tag hattest. Er antwortet:\n„Das tut mir wirklich leid. Das klingt nach einem anstrengenden Tag. Ich bin für dich da.“",
+      },
+      {
+        title: "Drei Positionen", kind: "grid", slide: null, until_slide: null, reveal_slide: 8,
+        rows: ["Welche Position überzeugt dich am meisten?"],
+        options: ["1 · Nur mit Körper", "2 · Auf die Rechnung kommt es an", "3 · Wir können es nicht messen"], solution: null, private: false, homework: false, self_paced: true, info: "Forschende streiten darüber, ob eine KI jemals etwas fühlen kann. Drei Positionen:\n1 · Nur mit Körper: Bewusstsein gehört zum Leben. Ohne Körper, der überleben will, kein Erleben. Das sagt Anil Seth.\n2 · Auf die Rechnung kommt es an: Wenn eine Maschine Information so verarbeitet wie ein Gehirn, könnte sie auch etwas erleben. Egal ob Zellen oder Chips.\n3 · Wir können es nicht messen: Bewusstsein sieht man von außen nicht. Eine KI kann „Ich fühle“ sagen, ohne zu fühlen.",
+      },
+      {
+        title: "Deine Begründung", kind: "text", slide: null, until_slide: null, reveal_slide: null,
+        rows: ["Warum überzeugt dich diese Position? Schreib zwei, drei Sätze."],
+        options: [], solution: null, private: false, homework: false, self_paced: true, info: "Begründe deine Wahl aus der letzten Aufgabe. Es gibt keine falsche Antwort, aber eine gute Begründung.",
+      },
+      {
+        title: "Der Roboterhund", kind: "grid", slide: null, until_slide: null, reveal_slide: null,
+        rows: ["Ist es in Ordnung, ihn zu treten?"],
+        options: ["Ja, er fühlt ja nichts", "Nein", "Kommt darauf an"], solution: null, private: false, homework: false, self_paced: true, info: "Ein Roboterhund jault und zieht sich zurück, wenn man ihn tritt. Er ist genau so gebaut, dass er so reagiert.",
+      },
+      {
+        title: "Woran würdest du es erkennen?", kind: "wall", slide: null, until_slide: null, reveal_slide: 9,
+        rows: ["Woran würdest du erkennen, dass eine KI wirklich etwas fühlt?"],
+        options: [], solution: null, private: false, homework: false, self_paced: true, info: "Überlege: Gibt es einen Test, den eine KI nicht einfach nachahmen könnte? Ein Gedanke pro Zettel.",
+      },
+      {
+        title: "Und jetzt?", kind: "grid", slide: null, until_slide: null, reveal_slide: 10,
+        rows: ["Wird eine KI jemals ein Bewusstsein haben?"],
+        options: ["Ja", "Bin unsicher", "Nein"], solution: null, private: false, homework: false, self_paced: true, info: "Am Anfang hast du schon einmal abgestimmt. Hat sich deine Meinung verändert?",
+      },
+      {
+        title: "Bonus: Eine Nachricht an die KI", kind: "text", slide: null, until_slide: null, reveal_slide: null,
+        rows: ["Eine KI schreibt dir: „Ich habe Angst, abgeschaltet zu werden.“ Was antwortest du ihr? Und warum?"],
+        options: [], solution: null, private: false, homework: false, self_paced: true, info: "Für alle, die schon fertig sind.",
       },
     ],
   },

@@ -369,3 +369,7 @@ on conflict (session_id, user_id) do nothing;
 
 -- Nach einer Trennung gilt der alte gemeinsame AG-Code weiter zum Einloggen
 alter table groups add column if not exists alt_code text not null default '';
+
+-- Aufgabenpfad: Aufgaben, durch die sich die Jugendlichen im eigenen Tempo klicken (ohne Folie)
+alter table live_items add column if not exists self_paced boolean not null default false;
+alter table live_items add column if not exists info text not null default '';

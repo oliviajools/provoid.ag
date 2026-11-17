@@ -651,3 +651,14 @@ a.srow:hover .stitle { color: var(--accent); }
   .doc-session { break-inside: avoid; }
   a { color: #111; text-decoration: none; }
 }
+
+/* Aufgabenpfad */
+.lv-fb { font-size: 15px; margin-top: 6px; }
+.lv-fb.ok { color: var(--ok); }
+.lv-fb.no { color: var(--warn); }
+.pfad-progress { display: flex; gap: 6px; flex-wrap: wrap; }
+.pfad-progress button { width: 36px; height: 36px; border: 1px solid var(--line); background: var(--bg); color: var(--muted); font-weight: 700; cursor: pointer; }
+.pfad-progress button.done { background: var(--surface-2); color: var(--text); border-color: var(--accent); }
+.pfad-progress button.here { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.pfad-info { white-space: pre-wrap; font-size: 18px; line-height: 1.5; color: var(--text); border-left: 4px solid var(--accent); padding: 4px 0 4px 16px; }
+.pfad-nav { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }

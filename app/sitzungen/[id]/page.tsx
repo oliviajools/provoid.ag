@@ -28,7 +28,12 @@ export default async function SessionPage({ params }: { params: Promise<{ id: st
   const nav = await sql<{ id: string; number: number }[]>`
     select id, number from ag_sessions where group_id = ${s.group_id} ${user.role === "coach" ? sql`` : sql`and published`} order by number`;
   const pos = nav.findIndex((n) => n.id === id);
-  const homework = (await loadItems(id)).filter((i) => i.homework && !i.closed && i.kind === "text");
+  const allItems = await loadItems(id);
+  const homework = allItems.filter((i) => i.homework && !i.closed && i.kind === "text");
+  const pfad = allItems.filter((i) => i.self_paced && !i.closed);
+  const pfadDone = user.role === "student" && pfad.length
+    ? (await sql<{ n: number }[]>`select count(distinct item_id)::int as n from live_responses where user_id = ${user.id} and item_id in ${sql(pfad.map((i) => i.id))}`)[0].n
+    : 0;
   const hwAnswers = user.role === "student" ? await Promise.all(homework.map((h) => myAnswers(h.id, user.id))) : [];
 
   return (
@@ -37,6 +42,16 @@ export default async function SessionPage({ params }: { params: Promise<{ id: st
       <main>
         <div className="container page" style={{ gap: 32 }}>
           {user.role === "student" && <LivePanel sessionId={id} />}
+          {pfad.length > 0 && (
+            <section className="card live-card">
+              <header><h3>Aufgaben zum Durchklicken</h3><span className="chip">{pfad.length} Aufgaben</span></header>
+              <div className="body" style={{ gap: 12 }}>
+                <p>Arbeite im eigenen Tempo. Deine Antworten werden gespeichert, in der Besprechung schauen wir sie gemeinsam an (ohne Namen).</p>
+                {user.role === "student" && pfadDone > 0 && <p className="faint">{pfadDone} von {pfad.length} schon bearbeitet.</p>}
+                <div><Link className="btn" href={`/sitzungen/${id}/aufgaben`}>{pfadDone > 0 ? "Weitermachen" : "Aufgaben starten"}</Link></div>
+              </div>
+            </section>
+          )}
           {user.role === "coach" && <div className="alert ok">Du bist als Coach angemeldet. Die Live-Aufgaben erscheinen nur bei Teilnehmenden. Zum Testen melde dich auf einem zweiten Gerät mit dem AG-Code und einem Test-Namen an.</div>}
           <section className="stack" style={{ gap: 14 }}>
             <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>

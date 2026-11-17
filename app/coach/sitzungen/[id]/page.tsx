@@ -21,6 +21,7 @@ function slideInfo(i: LiveItem) {
   if (i.slide !== null) parts.push(i.until_slide && i.until_slide !== i.slide ? `Folie ${i.slide} bis ${i.until_slide}` : `Folie ${i.slide}`);
   if (i.reveal_slide !== null) parts.push(`Auflösung Folie ${i.reveal_slide}`);
   if (i.homework) parts.push(i.closed ? "Hausaufgabe, geschlossen" : "Hausaufgabe, offen");
+  if (i.self_paced) parts.push(i.closed ? "Aufgabenpfad, geschlossen" : "Aufgabenpfad");
   return parts.join(" · ") || "ohne Folie";
 }
 
@@ -138,7 +139,7 @@ export default async function CoachSession({ params }: { params: Promise<{ id: s
                     <div className="live-actions">
                       {it.slide !== null && <ItemOp id={it.id} op="open" label="Jetzt öffnen" />}
                       {it.reveal_slide !== null && <ItemOp id={it.id} op="reveal" label="Auflösung zeigen" />}
-                      {it.homework && <ItemOp id={it.id} op="toggle" label={it.closed ? "Wieder öffnen" : "Schließen"} />}
+                      {(it.homework || it.self_paced) && <ItemOp id={it.id} op="toggle" label={it.closed ? "Wieder öffnen" : "Schließen"} />}
                       {people > 0 && <ItemOp id={it.id} op="reset" label="Antworten löschen" ghost={false} />}
                       <ItemOp id={it.id} op="delete" label="Interaktion entfernen" ghost={false} />
                     </div>

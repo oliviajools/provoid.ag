@@ -119,9 +119,10 @@ export async function insertTemplate(_: LiveActState, form: FormData): Promise<L
   for (const it of t.items) {
     i++;
     await sql`
-      insert into live_items (session_id, position, title, kind, slide, until_slide, reveal_slide, rows, options, solution, private, homework)
+      insert into live_items (session_id, position, title, kind, slide, until_slide, reveal_slide, rows, options, solution, private, homework, self_paced, info)
       values (${sessionId}, ${i}, ${it.title}, ${it.kind}, ${it.slide}, ${it.until_slide}, ${it.reveal_slide}, ${sql.json(it.rows)},
-              ${sql.json(it.options)}, ${it.solution ? sql.json(it.solution) : null}, ${it.private}, ${it.homework})`;
+              ${sql.json(it.options)}, ${it.solution ? sql.json(it.solution) : null}, ${it.private}, ${it.homework},
+              ${it.self_paced ?? false}, ${it.info ?? ""})`;
   }
   refresh(sessionId);
   return { ok: `${t.items.length} Interaktionen aus „${t.label}“ eingefügt.` };

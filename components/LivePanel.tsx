@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { LiveResults, type BoardActive, type BoardResult } from "./LiveResults";
 
-type Active = BoardActive & { mine: { key: string; value: string }[]; result: BoardResult | null };
+export type Active = BoardActive & { mine: { key: string; value: string }[]; result: BoardResult | null };
 type State = { live: boolean; slide?: number; active?: Active | null };
 
 async function send(sessionId: string, body: Record<string, string>) {
@@ -68,7 +68,7 @@ export function LivePanel({ sessionId }: { sessionId: string }) {
   );
 }
 
-function GridAnswer({ sessionId, a }: { sessionId: string; a: Active }) {
+export function GridAnswer({ sessionId, a, feedback = false }: { sessionId: string; a: Active; feedback?: boolean }) {
   const [mine, setMine] = useState<Record<string, string>>(() => Object.fromEntries(a.mine.map((m) => [m.key, m.value])));
   const [err, setErr] = useState<string | null>(null);
   async function pick(row: number, opt: number) {
@@ -90,6 +90,11 @@ function GridAnswer({ sessionId, a }: { sessionId: string; a: Active }) {
                 className={`lv-opt${mine[String(ri)] === String(oi) ? " on" : ""}`} onClick={() => pick(ri, oi)}>{o}</button>
             ))}
           </div>
+          {feedback && a.solution && a.solution[ri] !== null && a.solution[ri] !== undefined && mine[String(ri)] !== undefined && (
+            Number(mine[String(ri)]) === a.solution[ri]
+              ? <p className="lv-fb ok" role="status">Richtig.</p>
+              : <p className="lv-fb no" role="status">Nicht ganz. Richtig ist: {a.options[a.solution[ri] as number]}</p>
+          )}
         </div>
       ))}
       <p className="faint">{done} von {a.rows.length} beantwortet. Du kannst deine Wahl bis zum Ende ändern.</p>
@@ -97,7 +102,7 @@ function GridAnswer({ sessionId, a }: { sessionId: string; a: Active }) {
   );
 }
 
-function WallAnswer({ sessionId, a }: { sessionId: string; a: Active }) {
+export function WallAnswer({ sessionId, a }: { sessionId: string; a: Active }) {
   const cols = a.rows.length ? a.rows : ["Eure Ideen"];
   const [notes, setNotes] = useState(a.mine);
   const [draft, setDraft] = useState<string[]>(cols.map(() => ""));
@@ -146,7 +151,7 @@ function WallAnswer({ sessionId, a }: { sessionId: string; a: Active }) {
   );
 }
 
-function TextAnswer({ sessionId, a }: { sessionId: string; a: Active }) {
+export function TextAnswer({ sessionId, a }: { sessionId: string; a: Active }) {
   return <TextQuestions sessionId={sessionId} itemId={a.id} rows={a.rows} initial={a.mine} isPrivate={a.private} />;
 }
 
@@ -184,7 +189,7 @@ export function TextQuestions({ sessionId, itemId, rows, initial, isPrivate }: {
 
 const CLOUD_MAX = 3;
 
-function CloudAnswer({ sessionId, a }: { sessionId: string; a: Active }) {
+export function CloudAnswer({ sessionId, a }: { sessionId: string; a: Active }) {
   const [words, setWords] = useState(a.mine);
   const [draft, setDraft] = useState("");
   const [err, setErr] = useState<string | null>(null);
