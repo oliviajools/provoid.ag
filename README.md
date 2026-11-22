@@ -147,3 +147,11 @@ Kompass-Befragung → KI-Radar → Quellen einreichen → Projekte → Skill-Bau
 - Arten: Abstimmung (auch mehrere Aussagen, optional mit Lösung und Auflösungsfolie), Pinnwand (freie Zettel, mehrere Spalten), Fragen mit Textantwort (optional privat oder als Hausaufgabe).
 - Teilnehmende sehen die passende Aufgabe automatisch auf der Sitzungsseite (Abfrage alle 2,5 Sekunden), auf der Startseite erscheint ein Hinweis, solange die Sitzung live ist. Live endet nach drei Stunden ohne Lebenszeichen oder mit "Live beenden".
 - Auf der Tafel erscheinen alle Antworten ohne Namen. Mit Namen sieht sie nur der Coach unter "Antworten mit Namen ansehen".
+
+## Denkpartner-Baukasten
+
+- **Für die Teilnehmenden:** `/denkpartner`. Sechs Bausteine (Rolle, Kontext, Ziel, Verhalten im Fach, Grenzen, Abschluss) wie in der Fortbildung „KI in Bildung“. Die Grundregeln gegen Tricks und ein Rahmen für Jugendliche kommen automatisch dazu (`lib/denkpartner-prompt.ts`). Speichern, dann direkt im Chat testen. „Anweisung kopieren“ für Gemini oder ChatGPT.
+- **Datenschutz:** Gespeichert wird nur die Anweisung. Gespräche werden nicht gespeichert, nur ein Zähler pro Person und Woche (`denkpartner_usage`).
+- **Coach:** `/coach/denkpartner`. Baukasten pro AG ein- und ausschalten, Wochenlimit setzen (Standard 60), alle Anweisungen der AG ansehen und selbst testen.
+- **Datenbank:** `db/denkpartner.sql` einmal ausführen (steht auch am Ende von `schema.sql`).
+- **Umgebungsvariablen:** nutzt `ANTHROPIC_API_KEY` wie das Radar. Optional `DENKPARTNER_MODEL`, sonst `ANTHROPIC_MODEL`.

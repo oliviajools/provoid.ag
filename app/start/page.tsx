@@ -46,6 +46,12 @@ const FEATURES: { href?: string; title: string; when: string; text: string }[] =
     text: "Du findest unter der Woche etwas Spannendes über KI? Reich es ein. Die besten Funde landen im Radar, mit deinem Namen.",
   },
   {
+    href: "/denkpartner",
+    title: "Mein Denkpartner",
+    when: "Ab Session 3",
+    text: "Bau dir eine KI, die beim Denken hilft statt die Lösung zu verraten. Zum Beispiel für deine nächste Klausur. Hier testest du ihn auch.",
+  },
+  {
     title: "Mein Projekt",
     when: "Phase Bauen",
     text: "Dein eigenes KI-Projekt, allein oder im Team. Hier planst du es, hältst Fortschritte fest und zeigst es am Ende beim Showcase.",
@@ -80,6 +86,7 @@ export default async function Start() {
   const [{ n: wishCount }] = await sql<{ n: number }[]>`
     select count(*)::int as n from topic_wishes where group_id = ${user.group_id} and status in ('open', 'planned')`;
   const guest = await nextGuest(user.group_id);
+  const [{ n: dpCount }] = await sql<{ n: number }[]>`select count(*)::int as n from denkpartner where user_id = ${user.id}`;
   const hasCompass = (await sql`select 1 from compass where user_id = ${user.id} and round = 1`).length > 0;
   const before = days !== null && days > 0;
 
@@ -142,8 +149,8 @@ export default async function Start() {
                 </Link>
               ) : f.href ? (
                 <Link href={f.href} className="card tile live-tile" key={f.title}>
-                  <header><h3>{f.title}</h3><span className="chip live">{f.href === "/radar" ? `${radarCount} ${radarCount === 1 ? "Meldung" : "Meldungen"}` : f.href === "/sitzungen" ? `${sessionCount} ${sessionCount === 1 ? "Sitzung" : "Sitzungen"}` : f.href === "/themen" ? `${wishCount} ${wishCount === 1 ? "Wunsch" : "Wünsche"}` : f.href === "/gaeste" ? (guest ? `nächster am ${guest.day}.${guest.month ? " " + guest.month : ""}` : "bald") : "Offen"}</span></header>
-                  <div className="body"><p>{f.text}</p><span className="tile-cta">{f.href === "/radar" ? "Radar öffnen" : f.href === "/sitzungen" ? "Zu den Sitzungen" : f.href === "/themen" ? "Thema eintragen" : f.href === "/gaeste" ? "Gäste ansehen" : "Quelle einreichen"}</span></div>
+                  <header><h3>{f.title}</h3><span className="chip live">{f.href === "/radar" ? `${radarCount} ${radarCount === 1 ? "Meldung" : "Meldungen"}` : f.href === "/sitzungen" ? `${sessionCount} ${sessionCount === 1 ? "Sitzung" : "Sitzungen"}` : f.href === "/themen" ? `${wishCount} ${wishCount === 1 ? "Wunsch" : "Wünsche"}` : f.href === "/gaeste" ? (guest ? `nächster am ${guest.day}.${guest.month ? " " + guest.month : ""}` : "bald") : f.href === "/denkpartner" ? (dpCount ? `${dpCount} gebaut` : "Neu") : "Offen"}</span></header>
+                  <div className="body"><p>{f.text}</p><span className="tile-cta">{f.href === "/radar" ? "Radar öffnen" : f.href === "/sitzungen" ? "Zu den Sitzungen" : f.href === "/themen" ? "Thema eintragen" : f.href === "/gaeste" ? "Gäste ansehen" : f.href === "/denkpartner" ? "Denkpartner bauen" : "Quelle einreichen"}</span></div>
                 </Link>
               ) : (
                 <article className="card tile" key={f.title}>

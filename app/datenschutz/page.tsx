@@ -30,6 +30,7 @@ export default async function Datenschutz() {
               <li>Links, die du im KI-Radar einreichst, mit deinem Kommentar und Quellen-Check, sowie deine Reaktionen auf Meldungen. Reaktionen werden nur als Gesamtzahl angezeigt</li>
               <li>Themenwünsche, die du einträgst, und deine Stimmen dafür. Wünsche sehen alle aus deiner AG, mit deinem Pseudonym oder anonym, wie du es wählst</li>
               <li>Fragen, die du vorab an Gäste schickst. Sie sieht nur deine Coach</li>
+              <li>deine Denkpartner: Name, Fach und die Anweisung, die du im Baukasten schreibst. Sie sehen nur du und deine Coach. Von deinen Gesprächen mit dem Denkpartner speichern wir nichts, nur wie viele Nachrichten du pro Woche schickst</li>
               <li>deine Notizen zu den Sitzungen. Sie sind privat: Auch deine Coach sieht nur, dass es Notizen gibt, nicht was drinsteht</li>
             </ul>
 
@@ -41,6 +42,9 @@ export default async function Datenschutz() {
 
             <h2>KI-Aufbereitung von Nachrichten</h2>
             <p>Damit Nachrichten im KI-Radar leicht verständlich sind, schickt die Plattform den Text eines öffentlichen Artikels an einen KI-Dienst (Anthropic), der daraus eine kurze Karte schreibt. Dabei werden keine Daten über dich übertragen, nur der Artikeltext und gegebenenfalls der Kommentar zur Einreichung ohne Namen. Jede Karte wird von deiner Coach geprüft.</p>
+
+            <h2>Chat mit deinem Denkpartner</h2>
+            <p>Damit dein Denkpartner antworten kann, schickt die Plattform deine Nachrichten, den bisherigen Gesprächsverlauf und seine Anweisung an einen KI-Dienst (Anthropic). Dein Pseudonym wird dabei nicht übertragen. Wir speichern die Gespräche nicht: Sobald du die Seite verlässt oder ein neues Gespräch beginnst, sind sie weg. Gib deshalb keine Namen, Adressen oder andere persönliche Daten in den Chat ein.</p>
 
             <h2>Wo liegen die Daten?</h2>
             <p>Die Datenbank liegt auf einem Server von Hetzner in Deutschland. Die Website wird über Vercel in der Region Frankfurt ausgeliefert. [Auftragsverarbeitungsverträge mit Hetzner und Vercel ergänzen.]</p>
