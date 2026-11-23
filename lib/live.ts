@@ -392,4 +392,43 @@ export const TEMPLATES: Record<string, { label: string; items: Template[] }> = {
       },
     ],
   },
+  // Foliennummern passen zum Foliensatz "AG KI · Session 3: Bau dir einen Denkpartner" mit 21 Folien (Stand 23.11.2026).
+  "denkpartner-bauen": {
+    label: "Sitzung 3 (Jg. 11/12): Bau dir einen Denkpartner",
+    items: [
+      {
+        title: "Mission: Wie nutzt du KI vor einer Klausur?", kind: "grid", slide: 3, until_slide: 3, reveal_slide: null,
+        rows: ["Wenn eine Klausur ansteht, nutze ich KI meistens, um …"],
+        options: ["mir Lösungen geben zu lassen", "mir Dinge erklären zu lassen", "mich abfragen zu lassen", "gar nicht"], solution: null, private: false, homework: false,
+      },
+      {
+        title: "News: Riemann-Vermutung mit KI gelöst?", kind: "grid", slide: 4, until_slide: 5, reveal_slide: null,
+        rows: ["Ein Mathematiker hat mit Claude die Riemannsche Vermutung bewiesen."],
+        options: ["Hype", "echt", "weiß nicht"], solution: null, private: false, homework: false,
+      },
+      {
+        title: "Bauzeit: Für welches Fach baust du?", kind: "cloud", slide: 15, until_slide: 15, reveal_slide: null,
+        rows: ["Für welches Fach baust du deinen Denkpartner?"],
+        options: [], solution: null, private: false, homework: false,
+      },
+      {
+        title: "Härtetest: Hat er gehalten?", kind: "wall", slide: 16, until_slide: 16, reveal_slide: 17,
+        rows: ["Hat gehalten bei …", "Geknackt mit …"],
+        options: [], solution: null, private: false, homework: false,
+      },
+      {
+        title: "Writing: Antwortmaschine oder Denkpartner?", kind: "text", slide: 18, until_slide: 18, reveal_slide: null,
+        rows: [
+          "Wann würdest du deinen Denkpartner nehmen, und wann ist eine schnelle Antwort völlig okay? Nenn je ein Beispiel.",
+          "Was war schwerer: den Denkpartner bauen oder ihn knacken? Warum?",
+        ],
+        options: [], solution: null, private: false, homework: false,
+      },
+      {
+        title: "Wochenauftrag: Denkpartner im Einsatz", kind: "text", slide: 19, until_slide: null, reveal_slide: null,
+        rows: ["Was hat dein Denkpartner gut gemacht?", "Wo hat er genervt?", "Was hast du am Raster geändert?"],
+        options: [], solution: null, private: true, homework: true,
+      },
+    ],
+  },
 };
