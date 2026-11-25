@@ -14,6 +14,10 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
+  // Präsentation Investment-AG (statische Datei in public/investment)
+  async rewrites() {
+    return [{ source: "/investment", destination: "/investment/index.html" }];
+  },
 };
 
 export default nextConfig;
